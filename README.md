@@ -1,4 +1,4 @@
-**Definitions**
+## **Definitions**
 We are considering an N by N puzzle. For now, N = 3
 For a 3 by 3 puzzle, there is a 3 by 3 grid of tiles with 1 tile missing.
     [ 0 1 2
