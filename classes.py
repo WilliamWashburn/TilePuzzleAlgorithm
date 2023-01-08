@@ -38,16 +38,24 @@ class ReachedStateTracker:
     def __init__(self):
         self.reachedStates = []
         self.nbrReached = 0
+        self.reachedStatesList = []
 
     def checkIfReached(self, state):
-        for reachedState in self.reachedStates:
-            if reachedState.state == state.state:
-                return True
+        stateStr = self.createStateNumber(state.state)
+        if stateStr in self.reachedStates:
+            return True
         return False
     
     def addReachedState(self,state):
-        # print("Adding ", str(state.state), " to the reached states")
-        self.reachedStates.append(state)
+        stateStr = self.createStateNumber(state.state)
+        self.reachedStates.append(stateStr)
+        self.reachedStatesList.append(state.state)
+
+    def createStateNumber(self, state):
+        stateStr = ""
+        for i in state:
+            stateStr += str(i)
+        return int(stateStr)
 
 class DeadStateTracker:
     def __init__(self):
