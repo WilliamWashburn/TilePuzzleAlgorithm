@@ -3,6 +3,7 @@ def main():
     GoalTest()
     xprimetest()
     checkIfReachedTest()
+    CreateStateNumberTest()
 
 def xprimetest():
     from classes import stateObject
@@ -23,6 +24,15 @@ def checkIfReachedTest():
     assert(S.checkIfReached(x) == False)
     S.addReachedState(x)
     assert(S.checkIfReached(x) == True)
+
+def CreateStateNumberTest():
+    from classes import ReachedStateTracker
+    from classes import stateObject
+    N = 3
+    x = stateObject([3, 4, 7, 2, 0, 6, 1, 8, 5],N)
+    S = ReachedStateTracker()
+    stateNbr = S.createStateNumber(x.state)
+    assert(stateNbr == 347206185)
 
 def DeadStateTrackerTest():
     from classes import stateObject
