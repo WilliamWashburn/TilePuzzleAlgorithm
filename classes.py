@@ -4,8 +4,7 @@ class Queue:
         self.queue = [xi]
 
     def getFirst(self):
-        toReturn = self.queue[0]
-        self.queue.pop(0)
+        toReturn = self.queue.pop(0) #16% gain by using pop()
         return toReturn
 
     def printStates(self):
