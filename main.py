@@ -6,11 +6,13 @@ from classes import DeadStateTracker
 from functions import step
 import time as time
 
+debug = False
+
 def main(debug = False):
     N = 3 #3 by 3 grid of tiles
     xi = stateObject([5, 4, 8, 1, 2, 6, 7, 3, 0],N) #first state
-    XG = [stateObject([1, 2, 3, 4, 5, 6, 7, 8, 0],N)] # a list of possible states
-    # XG = [stateObject([4, 0, 7, 2, 8, 6, 1, 5, 3],N)] # a list of possible states
+    # XG = [stateObject([1, 2, 3, 4, 5, 6, 7, 8, 0],N)] # a list of possible states
+    XG = [stateObject([7, 4, 5, 3, 8, 0, 1, 6, 2],N)] # a list of possible states
 
     Q = Queue(xi) #add the first state object to the queue
     G = GoalState(XG)
@@ -18,20 +20,24 @@ def main(debug = False):
     S = ReachedStateTracker()
 
     S.addReachedState(xi)
-    
+
+    startTime = time.time()
+
     #start file
     if(debug):
-        file = open("check.txt", "w")
+        filename = "queue" + str(startTime) + ".txt"
+        file = open("queue.txt", "w")
         file.write("Step 0\n")
         print("Step 0\n")
         file.write(str(xi.state) + "\n\n")
         print(str(xi.state) + "\n\n")
 
     count = 0
-    startTime = time.time()
     while Q.queue and not G.ifReached:
-    # for inx in range(1,5000):
-        # input("Press Enter to continue...")
+    # for inx in range(1,8000):
+        if debug:
+            pass
+            # input("Press Enter to continue...")
         step(Q,G,D,S,N)
         if debug:
             file.write("Step " + str(count) + "\n")
@@ -50,11 +56,12 @@ def main(debug = False):
     if(len(Q.queue) == 0):
         print("The queue has been emptied")
 
-    print(S.nbrReached, " states were reached")
-    filename = "reachedStates" + str(endTime) + ".txt"
+    filename = "reachedStates" + str(startTime) + ".txt"
     f = open(filename, "w")
     f.write("Initial state: " + str(xi.state) + "\n")
-    f.write("Goal state: " + str(XG[0].state) + "\n\n")
+    f.write("Goal state: " + str(XG[0].state) + "\n")
+    f.write(str(S.nbrReached) + " states were reached\n")
+    f.write("Finished in " + str(round(totalTime/60)) + " min, " + str(round(totalTime%60)) + " secs, " + str(round(((totalTime%60)*1000)%1000)) + " ms\n")
     for State in S.reachedStates:
         f.write(str(State.state))
         f.write("\n")
@@ -62,7 +69,7 @@ def main(debug = False):
     print("Created a file called",filename,"containing all the reached states")
 
 if __name__ == "__main__":
-    main()
+    main(debug)
 
 
             
