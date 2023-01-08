@@ -33,6 +33,8 @@ class GoalState:
     def goalReached(self,inputboolan):
         self.ifReached = inputboolan
 
+from functions import createStateNumber
+
 class ReachedStateTracker:
     def __init__(self):
         self.reachedStates = []
@@ -40,21 +42,15 @@ class ReachedStateTracker:
         self.reachedStatesList = []
 
     def checkIfReached(self, state):
-        stateStr = self.createStateNumber(state.state)
+        stateStr = createStateNumber(state.state)
         if stateStr in self.reachedStates:
             return True
         return False
     
     def addReachedState(self,state):
-        stateStr = self.createStateNumber(state.state)
+        stateStr = createStateNumber(state.state)
         self.reachedStates.append(stateStr)
         self.reachedStatesList.append(state.state)
-
-    def createStateNumber(self, state):
-        stateStr = ""
-        for i in state:
-            stateStr += str(i)
-        return int(stateStr)
 
 class DeadStateTracker:
     def __init__(self):

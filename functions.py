@@ -28,6 +28,11 @@ def printStates(listOfStateObjs):
 #                 #     D.appendToDead(primeX)
 #     printStates(stateTracker.reachedStates)
 #     print("Reached: ",len(stateTracker.reachedStates)," or ",stateTracker.nbrReached, " states")
+def createStateNumber(state):
+        stateStr = ""
+        for i in state:
+            stateStr += str(i)
+        return int(stateStr)
 
 def step(Q,G,D,S,N):
     if not Q.queue:
