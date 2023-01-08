@@ -8,7 +8,7 @@ def printStates(listOfStateObjs):
 #     G = GoalState(XG)
 #     D = DeadStateTracker()
 #     stateTracker = ReachedStateTracker()
-#     while Q:
+#     while Q.queue:
 #         state = Q.getFirst()
 #         if G.checkIfGoalReached(state):
 #             print("goal reached!")
@@ -29,28 +29,25 @@ def printStates(listOfStateObjs):
 #     printStates(stateTracker.reachedStates)
 #     print("Reached: ",len(stateTracker.reachedStates)," or ",stateTracker.nbrReached, " states")
 
-def step(Q,G,D,stateTracker,N):
-    if not Q:
+def step(Q,G,D,S,N):
+    if not Q.queue:
         print("Q empty!")
         return
     state = Q.getFirst()
     if G.checkIfGoalReached(state):
         print("goal reached!")
+        G.goalReached(True) #set goal reached flag
         return
-    print("first")
-    print(state.state)
-    print("next states")
-    printStates(state.returnxprime(N))
-    sum_checkIfReached = 0
     for primeX in state.returnxprime(N):
-        if stateTracker.checkIfReached(primeX):
+        if S.checkIfReached(primeX):
+            # print("Rejecting",str(primeX.state))
             pass
         else:
-            stateTracker.reachedStates.append(primeX)
+            S.addReachedState(primeX)
             Q.queue.append(primeX)
-            stateTracker.nbrReached += 1
-            if (stateTracker.nbrReached % 1000 == 0):
-                print(stateTracker.nbrReached, (stateTracker.nbrReached/362880)*100,"%" )
+            S.nbrReached += 1
+            if (S.nbrReached % 1000 == 0):
+                print(S.nbrReached, (S.nbrReached/362880)*100,"%" )
 
 def stepNumberOfTimes(nbrOfTimes,Q,G,D,S,N):
     print("Step 0")

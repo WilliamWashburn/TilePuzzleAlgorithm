@@ -23,12 +23,16 @@ class Queue:
 class GoalState:
     def __init__(self, goalstates):
         self.goalstates = goalstates
+        self.ifReached = False #flag for if goal reached
 
     def checkIfGoalReached(self,state):
         for goalState in self.goalstates:
             if goalState.state == state.state:
                 return True
         return False
+
+    def goalReached(self,inputboolan):
+        self.ifReached = inputboolan
 
 class ReachedStateTracker:
     def __init__(self):
@@ -40,6 +44,10 @@ class ReachedStateTracker:
             if reachedState.state == state.state:
                 return True
         return False
+    
+    def addReachedState(self,state):
+        # print("Adding ", str(state.state), " to the reached states")
+        self.reachedStates.append(state)
 
 class DeadStateTracker:
     def __init__(self):
@@ -47,30 +55,17 @@ class DeadStateTracker:
     
     #check if all its next states are already reached
     def checkIfShouldBeDead(self,stateObj,reachedStates,N):
-        # print(stateObj.state)
-        # printStates(reachedStates)
         nextStates = stateObj.returnxprime(N)
-        # printStates(nextStates)
-        #check reached states
-
-        # for i in nextStates:
-        #     print(i.state)
-        
         count = 0
         for aNextState in nextStates: #for each next state, check if already in reached states
             oneInReached = False
             #check if in reached states
             for aReachedStates in reachedStates:
-                # print(aReachedStates.state)
                 if(aNextState.state == aReachedStates.state):
                     #the next state is already reached!
                     oneInReached = True
                     count = count + 1
-                    # print(aNextState.state)
-                    # print(aReachedStates.state)
-            # print(oneInReached)
         if (count == len(nextStates)):
-            # print("all reached")
             return True
         else:
             return False
@@ -124,46 +119,46 @@ class stateObject:
         #check corners
         if self.zeroPosition == 0:
             #top left corner, only right and bottom
-            xprimeList.append(stateObject(self.rightMovement()))
-            xprimeList.append(stateObject(self.bottomMovement()))
+            xprimeList.append(stateObject(self.rightMovement(),N))
+            xprimeList.append(stateObject(self.bottomMovement(),N))
         elif self.zeroPosition == self.N - 1:
             #top right corner, only left and bottom
-            xprimeList.append(stateObject(self.leftMovement()))
-            xprimeList.append(stateObject(self.bottomMovement()))
+            xprimeList.append(stateObject(self.leftMovement(),N))
+            xprimeList.append(stateObject(self.bottomMovement(),N))
         elif self.zeroPosition == self.N*self.N-1:
             #bottom right corner, only left and top
-            xprimeList.append(stateObject(self.topMovement()))
-            xprimeList.append(stateObject(self.leftMovement()))
+            xprimeList.append(stateObject(self.topMovement(),N))
+            xprimeList.append(stateObject(self.leftMovement(),N))
         elif self.zeroPosition == self.N*self.N-self.N:
             #bottom left corner, only top and right
-            xprimeList.append(stateObject(self.topMovement()))
-            xprimeList.append(stateObject(self.rightMovement()))
+            xprimeList.append(stateObject(self.topMovement(),N))
+            xprimeList.append(stateObject(self.rightMovement(),N))
         
         #check edges
         elif self.zeroPosition < self.N:
             #zero along top, only left,right,bottom
-            xprimeList.append(stateObject(self.leftMovement()))
-            xprimeList.append(stateObject(self.rightMovement()))
-            xprimeList.append(stateObject(self.bottomMovement()))
+            xprimeList.append(stateObject(self.leftMovement(),N))
+            xprimeList.append(stateObject(self.rightMovement(),N))
+            xprimeList.append(stateObject(self.bottomMovement(),N))
         elif self.N*self.N-self.N < self.zeroPosition < self.N*self.N-1:
             #zero along bottom, only left,right,top
-            xprimeList.append(stateObject(self.leftMovement()))
-            xprimeList.append(stateObject(self.rightMovement()))
-            xprimeList.append(stateObject(self.topMovement()))
+            xprimeList.append(stateObject(self.leftMovement(),N))
+            xprimeList.append(stateObject(self.rightMovement(),N))
+            xprimeList.append(stateObject(self.topMovement(),N))
         elif self.zeroPosition % self.N == 0:
             #zero along left side, only right,top, bottom
-            xprimeList.append(stateObject(self.bottomMovement()))
-            xprimeList.append(stateObject(self.rightMovement()))
-            xprimeList.append(stateObject(self.topMovement()))
+            xprimeList.append(stateObject(self.bottomMovement(),N))
+            xprimeList.append(stateObject(self.rightMovement(),N))
+            xprimeList.append(stateObject(self.topMovement(),N))
         elif self.zeroPosition % self.N == 2:
             #zero along right side, only left,top, bottom
-            xprimeList.append(stateObject(self.bottomMovement()))
-            xprimeList.append(stateObject(self.leftMovement()))
-            xprimeList.append(stateObject(self.topMovement()))
+            xprimeList.append(stateObject(self.bottomMovement(),N))
+            xprimeList.append(stateObject(self.leftMovement(),N))
+            xprimeList.append(stateObject(self.topMovement(),N))
         else:
-            xprimeList.append(stateObject(self.bottomMovement()))
-            xprimeList.append(stateObject(self.leftMovement()))
-            xprimeList.append(stateObject(self.topMovement()))
-            xprimeList.append(stateObject(self.rightMovement()))
+            xprimeList.append(stateObject(self.bottomMovement(),N))
+            xprimeList.append(stateObject(self.leftMovement(),N))
+            xprimeList.append(stateObject(self.topMovement(),N))
+            xprimeList.append(stateObject(self.rightMovement(),N))
         
         return xprimeList
