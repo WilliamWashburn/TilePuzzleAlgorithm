@@ -1,6 +1,7 @@
 Initial state: [5, 4, 8, 1, 2, 6, 7, 3, 0]
 Goal state: [1, 2, 3, 4, 5, 6, 7, 8, 0]
-
+103358 states were reached
+Finished in 16 min, 60 secs, 814 ms
 [5, 4, 8, 1, 2, 6, 7, 3, 0]
 [5, 4, 8, 1, 2, 0, 7, 3, 6]
 [5, 4, 8, 1, 2, 6, 7, 0, 3]
