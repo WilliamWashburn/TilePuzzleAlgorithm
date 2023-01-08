@@ -13,7 +13,7 @@ def printStates(listOfStateObjs):
 #         if G.checkIfGoalReached(state):
 #             print("goal reached!")
 #             break
-#         for primeX in state.returnxprime(N):
+#         for primeX in state.returnxprime():
 #             if not stateTracker.checkIfReached(primeX):
 #                 # print(primeX.state)
 #                 stateTracker.reachedStates.append(primeX)
@@ -34,16 +34,16 @@ def createStateNumber(state):
             stateStr += str(i)
         return int(stateStr)
 
-def step(Q,G,D,S,N):
+def step(Q,G,S,N):
     if not Q.queue:
         print("Q empty!")
         return
     state = Q.getFirst()
     if G.checkIfGoalReached(state):
-        print("goal reached!")
+        print("goal reached! -->", str(state.state))
         G.goalReached(True) #set goal reached flag
         return
-    for primeX in state.returnxprime(N):
+    for primeX in state.returnxprime():
         if S.checkIfReached(primeX):
             # print("Rejecting",str(primeX.state))
             pass

@@ -116,52 +116,52 @@ class stateObject:
         newState[self.zeroPosition + self.N] = self.state[self.zeroPosition]
         return newState
 
-    def returnxprime(self,N):
+    def returnxprime(self):
         xprimeList = []
 
         #check corners
         if self.zeroPosition == 0:
             #top left corner, only right and bottom
-            xprimeList.append(stateObject(self.rightMovement(),N))
-            xprimeList.append(stateObject(self.bottomMovement(),N))
+            xprimeList.append(stateObject(self.rightMovement(),self.N))
+            xprimeList.append(stateObject(self.bottomMovement(),self.N))
         elif self.zeroPosition == self.N - 1:
             #top right corner, only left and bottom
-            xprimeList.append(stateObject(self.leftMovement(),N))
-            xprimeList.append(stateObject(self.bottomMovement(),N))
+            xprimeList.append(stateObject(self.leftMovement(),self.N))
+            xprimeList.append(stateObject(self.bottomMovement(),self.N))
         elif self.zeroPosition == self.N*self.N-1:
             #bottom right corner, only left and top
-            xprimeList.append(stateObject(self.topMovement(),N))
-            xprimeList.append(stateObject(self.leftMovement(),N))
+            xprimeList.append(stateObject(self.topMovement(),self.N))
+            xprimeList.append(stateObject(self.leftMovement(),self.N))
         elif self.zeroPosition == self.N*self.N-self.N:
             #bottom left corner, only top and right
-            xprimeList.append(stateObject(self.topMovement(),N))
-            xprimeList.append(stateObject(self.rightMovement(),N))
+            xprimeList.append(stateObject(self.topMovement(),self.N))
+            xprimeList.append(stateObject(self.rightMovement(),self.N))
         
         #check edges
         elif self.zeroPosition < self.N:
             #zero along top, only left,right,bottom
-            xprimeList.append(stateObject(self.leftMovement(),N))
-            xprimeList.append(stateObject(self.rightMovement(),N))
-            xprimeList.append(stateObject(self.bottomMovement(),N))
+            xprimeList.append(stateObject(self.leftMovement(),self.N))
+            xprimeList.append(stateObject(self.rightMovement(),self.N))
+            xprimeList.append(stateObject(self.bottomMovement(),self.N))
         elif self.N*self.N-self.N < self.zeroPosition < self.N*self.N-1:
             #zero along bottom, only left,right,top
-            xprimeList.append(stateObject(self.leftMovement(),N))
-            xprimeList.append(stateObject(self.rightMovement(),N))
-            xprimeList.append(stateObject(self.topMovement(),N))
+            xprimeList.append(stateObject(self.leftMovement(),self.N))
+            xprimeList.append(stateObject(self.rightMovement(),self.N))
+            xprimeList.append(stateObject(self.topMovement(),self.N))
         elif self.zeroPosition % self.N == 0:
             #zero along left side, only right,top, bottom
-            xprimeList.append(stateObject(self.bottomMovement(),N))
-            xprimeList.append(stateObject(self.rightMovement(),N))
-            xprimeList.append(stateObject(self.topMovement(),N))
+            xprimeList.append(stateObject(self.bottomMovement(),self.N))
+            xprimeList.append(stateObject(self.rightMovement(),self.N))
+            xprimeList.append(stateObject(self.topMovement(),self.N))
         elif self.zeroPosition % self.N == 2:
             #zero along right side, only left,top, bottom
-            xprimeList.append(stateObject(self.bottomMovement(),N))
-            xprimeList.append(stateObject(self.leftMovement(),N))
-            xprimeList.append(stateObject(self.topMovement(),N))
+            xprimeList.append(stateObject(self.bottomMovement(),self.N))
+            xprimeList.append(stateObject(self.leftMovement(),self.N))
+            xprimeList.append(stateObject(self.topMovement(),self.N))
         else:
-            xprimeList.append(stateObject(self.bottomMovement(),N))
-            xprimeList.append(stateObject(self.leftMovement(),N))
-            xprimeList.append(stateObject(self.topMovement(),N))
-            xprimeList.append(stateObject(self.rightMovement(),N))
+            xprimeList.append(stateObject(self.bottomMovement(),self.N))
+            xprimeList.append(stateObject(self.leftMovement(),self.N))
+            xprimeList.append(stateObject(self.topMovement(),self.N))
+            xprimeList.append(stateObject(self.rightMovement(),self.N))
         
         return xprimeList

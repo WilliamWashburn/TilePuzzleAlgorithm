@@ -5,6 +5,7 @@ from classes import GoalState
 from classes import DeadStateTracker
 from functions import step
 import time as time
+import datetime
 
 debug = False
 
@@ -16,12 +17,12 @@ def main(debug = False):
 
     Q = Queue(xi) #add the first state object to the queue
     G = GoalState(XG)
-    D = DeadStateTracker()
     S = ReachedStateTracker()
 
     S.addReachedState(xi)
 
     startTime = time.time()
+    startTimeDate = datetime.datetime.now()
 
     #start file
     if(debug):
@@ -38,7 +39,7 @@ def main(debug = False):
         if debug:
             pass
             # input("Press Enter to continue...")
-        step(Q,G,D,S,N)
+        step(Q,G,S,N)
         if debug:
             file.write("Step " + str(count) + "\n")
             print("Step " + str(count) + "\n")
@@ -56,7 +57,7 @@ def main(debug = False):
     if(len(Q.queue) == 0):
         print("The queue has been emptied")
 
-    filename = "reachedStates" + str(startTime) + ".txt"
+    filename = "reachedStates" + "--" + str(startTimeDate.hour) + "-" + str(startTimeDate.minute) + "--" + str(startTimeDate.month) + "-" + str(startTimeDate.day) + "-" + str(startTimeDate.year) + ".txt"
     f = open(filename, "w")
     f.write("Initial state: " + str(xi.state) + "\n")
     f.write("Goal state: " + str(XG[0].state) + "\n")
