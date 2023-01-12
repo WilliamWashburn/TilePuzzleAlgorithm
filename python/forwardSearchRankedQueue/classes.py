@@ -18,6 +18,9 @@ class Queue:
                 self.queue.pop(inx)
                 return
             inx = inx + 1
+    
+    def sortQueue(self):
+        self.queue.sort(key = getattr(self,'score'))
 
 class GoalState:
     def __init__(self, goalstates):
@@ -58,7 +61,7 @@ class DeadStateTracker:
     
     #check if all its next states are already reached
     def checkIfShouldBeDead(self,stateObj,reachedStates,N):
-        nextStates = stateObj.returnxprime(N)
+        nextStates = stateObj.returnxprime()
         count = 0
         for aNextState in nextStates: #for each next state, check if already in reached states
             oneInReached = False
@@ -81,6 +84,16 @@ class stateObject:
         self.state = stateOrder
         self.zeroPosition = self.getZeroPosition()
         self.N = N
+        self.score = 9999
+
+    def createScore(self,xG):
+        inx = 0
+        score = 0
+        for nbr in self.state:
+            # score += abs(nbr - inx)
+            inx += 1
+
+            
 
     def getZeroPosition(self):
         return self.state.index(0)
