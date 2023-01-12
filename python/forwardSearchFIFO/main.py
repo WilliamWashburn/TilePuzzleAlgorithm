@@ -12,8 +12,8 @@ debug = False
 def main(debug = False):
     N = 3 #3 by 3 grid of tiles
     xi = stateObject([5, 4, 8, 1, 2, 6, 7, 3, 0],N) #first state
-    XG = [stateObject([1, 2, 3, 4, 5, 6, 7, 8, 0],N)] # a list of possible states
-    # XG = [stateObject([7, 4, 5, 3, 8, 0, 1, 6, 2],N)] # a list of possible states
+    # XG = [stateObject([1, 2, 3, 4, 5, 6, 7, 8, 0],N)] # a list of possible states
+    XG = [stateObject([3, 8, 0, 4, 2, 6, 5, 1, 7],N)] # a list of possible states
 
     Q = Queue(xi) #add the first state object to the queue
     G = GoalState(XG)
