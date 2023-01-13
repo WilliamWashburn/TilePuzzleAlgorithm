@@ -1,8 +1,11 @@
-## Definitions
+This repository is my practice to learn about algorithms while reading "Planning Algorithms" by Steven M. LaValle.
+
+To practice, I am writing a program to solve the "sliding puzzle" game: https://en.wikipedia.org/wiki/Sliding_puzzle
+
 We are considering an N by N puzzle. For now, N = 3
-For a 3 by 3 puzzle, there is a 3 by 3 grid of tiles with 1 tile missing.
-    [ 0 1 2
-      3 4 5
+For a 3 by 3 puzzle, there is a 3 by 3 grid of tiles with 1 tile missing. We can represent the tiles like this:
+    [ 0 1 2;
+      3 4 5;
       6 7 8 ]
 We will consider the 0 to represent the missing tile.
 
