@@ -29,4 +29,4 @@ In general, there are 4 movements,
 If the blank tile is on the edge of the board, then there is only 3 possible movements
 If the blank tile is in the corner of the board, then there is only 2 possible movements
 
-This is explained more throughly here: [a relative link](movementDefinitions.md)
+This is explained more throughly here: [a relative link](appendix/movementDefinitions.md)
