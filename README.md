@@ -44,6 +44,7 @@ To benchmark each search algorithm, I will search through the entire solution sp
 The queue is sorted by "First in, First out". When we take a state off of the queue, it will have been in the queue the longest. When we add to the queue, it goes in the back. As we take states out of the queue, the elements slide forward in priority.
 
 Trial: [python/forwardSearchFIFO/main.py](python/forwardSearchFIFO/main.py)
+
 **Whole solution space:** 9 min, 19 secs with 181440 states reached
 **To the goal:** 2 min, 58 secs with 103359 states reached
 Not very fast!
@@ -51,6 +52,7 @@ Not very fast!
 I want to see if I am slowing python down by having all the functions being broken out in classes. To test this, I'm simiplying everything to as "barebones" python as I know how.
 
 Trial: [python/forwardSearchFIFO/simplifiedVersion/main.py](python/forwardSearchFIFO/simplifiedVersion/main.py)
+
 **Whole solution space:** 9 min, 19 secs reaching 181440 states
 **To the goal:** 2 min, 55 secs reaching 103359 states
 
@@ -58,6 +60,7 @@ This didn't improve performance at all. I know that this search method is not ve
 
 I rewrote the program in C++ just to see how much faster it could be. Here are the results:
 Trial: [c++/FIFO.cpp](c++/FIFO.cpp)
+
 **Whole solution space:** 1 min, 46 secs reaching 181440 states
 **To the goal:** 20 secs reaching 103359 states
 
@@ -79,6 +82,7 @@ This search algorithm is good for finding the shortest paths. Its not really use
 We start at the beginning state. For that state, we look at all the next states. If we have not reached that state before, we mark that state as reached and assign an initial distance to that state and path to that state. We will add this new state to the queue to check adjacent states. If we have reached the state, we compare the distance to that state through the current path to the previous distance to that state. If we found a shorter path, we update the distance to that state and the associated path. Once we have checked all adjacent states of the beginning state, we get the next state from the queue based on FIFO.
 
 Trial: [python/DijkstrasAlgorithm/main.py](python/DijkstrasAlgorithm/main.py)
+
 **Whole solution space:** 5 secs reaching 181440 states
 **To the goal:** 3 secs reaching 125614 states giving shortest path of 22 moves
 
