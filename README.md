@@ -78,7 +78,7 @@ This search algorithm is good for finding the shortest paths. Its not really use
 
 We start at the beginning state. For that state, we look at all the next states. If we have not reached that state before, we mark that state as reached and assign an initial distance to that state and path to that state. We will add this new state to the queue to check adjacent states. If we have reached the state, we compare the distance to that state through the current path to the previous distance to that state. If we found a shorter path, we update the distance to that state and the associated path. Once we have checked all adjacent states of the beginning state, we get the next state from the queue based on FIFO.
 
-Trial: [python/Dijkstra’s Algorithm/main.py](python/Dijkstra’s Algorithm/main.py)
+Trial: [python/DijkstrasAlgorithm/main.py](python/DijkstrasAlgorithm/main.py)
 **Whole solution space:** 5 secs reaching 181440 states
 **To the goal:** 3 secs reaching 125614 states giving shortest path of 22 moves
 
