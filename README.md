@@ -46,6 +46,7 @@ The queue is sorted by "First in, First out". When we take a state off of the qu
 Trial: [python/forwardSearchFIFO/main.py](python/forwardSearchFIFO/main.py)
 
 **Whole solution space:** 9 min, 19 secs with 181440 states reached
+
 **To the goal:** 2 min, 58 secs with 103359 states reached
 Not very fast!
 
@@ -54,6 +55,7 @@ I want to see if I am slowing python down by having all the functions being brok
 Trial: [python/forwardSearchFIFO/simplifiedVersion/main.py](python/forwardSearchFIFO/simplifiedVersion/main.py)
 
 **Whole solution space:** 9 min, 19 secs reaching 181440 states
+
 **To the goal:** 2 min, 55 secs reaching 103359 states
 
 This didn't improve performance at all. I know that this search method is not very fast, but how much faster would C++ be?
@@ -62,6 +64,7 @@ I rewrote the program in C++ just to see how much faster it could be. Here are t
 Trial: [c++/FIFO.cpp](c++/FIFO.cpp)
 
 **Whole solution space:** 1 min, 46 secs reaching 181440 states
+
 **To the goal:** 20 secs reaching 103359 states
 
 Thats definitely faster!
@@ -84,6 +87,7 @@ We start at the beginning state. For that state, we look at all the next states.
 Trial: [python/DijkstrasAlgorithm/main.py](python/DijkstrasAlgorithm/main.py)
 
 **Whole solution space:** 5 secs reaching 181440 states
+
 **To the goal:** 3 secs reaching 125614 states giving shortest path of 22 moves
 
 
