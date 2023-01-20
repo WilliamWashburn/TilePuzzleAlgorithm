@@ -1,76 +1,159 @@
-from classes import Queue
-from classes import stateObject
-from classes import ReachedStateTracker
-from classes import GoalState
-from classes import DeadStateTracker
-from functions import step
 import time as time
-import datetime
+import collections
 
-debug = False
+xi = [5, 4, 8, 1, 2, 6, 7, 3, 0] #initial state
+xG = [1, 2, 3, 4, 5, 6, 7, 8, 0] #goal state
+N = 3 #number of tiles on side
+maxStates = 362880
 
-def main(debug = False):
-    N = 3 #3 by 3 grid of tiles
-    xi = stateObject([5, 4, 8, 1, 2, 6, 7, 3, 0],N) #first state
-    # XG = [stateObject([1, 2, 3, 4, 5, 6, 7, 8, 0],N)] # a list of possible states
-    XG = [stateObject([3, 8, 0, 4, 2, 6, 5, 1, 7],N)] # a list of possible states
+# xi = [5, 1, 7, 3, 6, 0, 11, 2, 9, 4, 10, 8, 13, 14, 15, 12]
+# xG = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0] #goal state
+# N = 4 #number of tiles on side
+# maxStates = 20922789888000
 
-    Q = Queue(xi) #add the first state object to the queue
-    G = GoalState(XG)
-    S = ReachedStateTracker()
+queue = collections.deque() #the queue
+reachedStates = {}
+goalReached = False #if we have reached the goal or not
+nbrReached = 0
 
-    S.addReachedState(xi)
-
+def main():
+    global nbrReached
     startTime = time.time()
-    startTimeDate = datetime.datetime.now()
-
-    #start file
-    if(debug):
-        filename = "queue" + str(startTime) + ".txt"
-        file = open("queue.txt", "w")
-        file.write("Step 0\n")
-        print("Step 0\n")
-        file.write(str(xi.state) + "\n\n")
-        print(str(xi.state) + "\n\n")
-
-    count = 0
-    while Q.queue and not G.ifReached:
-    # for inx in range(1,8000):
-        if debug:
-            pass
-            # input("Press Enter to continue...")
-        step(Q,G,S,N)
-        if debug:
-            file.write("Step " + str(count) + "\n")
-            print("Step " + str(count) + "\n")
-            for i in Q.queue:
-                file.write(str(i.state) + "\n")
-                print(str(i.state) + "\n")
-            file.write("\n")
-            count+=1
-    if debug:
-        file.close()
-
+    reachedStates[createStateNumber(xi)] = None
+    queue.append(xi)
+    nbrReached += 1
+    while queue:
+        step()
+        if goalReached:
+            break
     endTime = time.time()
-    totalTime = endTime - startTime
-    print("Finished in", round(totalTime/60), "min,", round(totalTime%60), "secs,", round(((totalTime%60)*1000)%1000), "ms")
-    if(len(Q.queue) == 0):
-        print("The queue has been emptied")
+    totalTime = endTime - startTime 
+    print("Finished in " + str(round(totalTime/60)) + " min, " + str(round(totalTime%60)) + " secs, " + str(round(((totalTime%60)*1000)%1000)) + " ms\n")
+    print("Reached:",nbrReached,"states")
 
-    filename = "reachedStates" + "--" + str(startTimeDate.hour) + "-" + str(startTimeDate.minute) + "--" + str(startTimeDate.month) + "-" + str(startTimeDate.day) + "-" + str(startTimeDate.year) + ".txt"
-    f = open(filename, "w")
-    f.write("Initial state: " + str(xi.state) + "\n")
-    f.write("Goal state: " + str(XG[0].state) + "\n")
-    f.write(str(S.nbrReached) + " states were reached\n")
-    f.write("Finished in " + str(round(totalTime/60)) + " min, " + str(round(totalTime%60)) + " secs, " + str(round(((totalTime%60)*1000)%1000)) + " ms\n")
-    for state in S.reachedStatesList:
-        f.write(str(state))
-        f.write("\n")
-    f.close()
-    print("Created a file called",filename,"containing all the reached states")
+    pathLength = 0
+    prevState = reachedStates[createStateNumber(xG)]
+    while prevState is not None:
+        if prevState < 100000000:
+            print("0"+str(prevState),"->")
+        else:
+            print(prevState,"->")
+        pathLength += 1
+        prevState = reachedStates[prevState]
+    print("pathLength:",pathLength)
+
+def createStateNumber(state):
+    stateStr = ""
+    for i in state:
+        stateStr += str(i)
+    return int(stateStr)
+
+def step():
+    global nbrReached
+    global goalReached
+    if not queue:
+        print("The queue is empty")
+        return
+    
+    currentState = queue.popleft()
+    if currentState == xG:
+        print("Goal Reached!")
+        goalReached = True
+        return
+    for xprime in returnxprime(currentState):
+        if checkifReached(xprime):
+            pass
+        else:
+            reachedStates[createStateNumber(xprime)] = createStateNumber(currentState)
+            queue.append(xprime)
+            nbrReached += 1
+            # if nbrReached%100000 == 0:
+            #     print("Reached:",nbrReached, "\tPercentage:", round((nbrReached/maxStates)*100), "%")
+
+def checkifReached(state):
+    stateNbr = createStateNumber(state)
+    if stateNbr in reachedStates:
+        return True
+    return False
+
+
+def rightMovement(state, zeroPosition):
+    # x[i] <=> x[i+1]
+    newState = state.copy()
+    newState[zeroPosition] = state[zeroPosition + 1]
+    newState[zeroPosition + 1] = state[zeroPosition]
+    return newState
+
+def leftMovement(state, zeroPosition):
+    # x[i] <=> x[i-1]
+    newState = state.copy()
+    newState[zeroPosition] = state[zeroPosition - 1]
+    newState[zeroPosition - 1] = state[zeroPosition]
+    return newState
+
+def topMovement(state, zeroPosition):
+    #x[i] <=> x[i-N]
+    newState = state.copy()
+    newState[zeroPosition] = state[zeroPosition - N]
+    newState[zeroPosition - N] = state[zeroPosition]
+    return newState
+
+def bottomMovement(state, zeroPosition):
+    #x[i] <=> x[i-N]
+    newState = state.copy()
+    newState[zeroPosition] = state[zeroPosition + N]
+    newState[zeroPosition + N] = state[zeroPosition]
+    return newState
+
+def returnxprime(state):
+    xprimeList = [] # a list of all the new possible states
+    zeroPosition = state.index(0)
+    #check corners
+    if zeroPosition == 0:
+        #top left corner, only right and bottom
+        xprimeList.append(rightMovement(state, zeroPosition))
+        xprimeList.append(bottomMovement(state, zeroPosition))
+    elif zeroPosition == N - 1:
+        #top right corner, only left and bottom
+        xprimeList.append(leftMovement(state, zeroPosition))
+        xprimeList.append(bottomMovement(state, zeroPosition))
+    elif zeroPosition == (N*N)-1:
+        #bottom right corner, only left and top
+        xprimeList.append(topMovement(state, zeroPosition))
+        xprimeList.append(leftMovement(state, zeroPosition))
+    elif zeroPosition == (N*N)-N:
+        #bottom left corner, only top and right
+        xprimeList.append(topMovement(state, zeroPosition))
+        xprimeList.append(rightMovement(state, zeroPosition))
+    
+    #check edges
+    elif zeroPosition < N - 1:
+        #zero along top, only left,right,bottom
+        xprimeList.append(leftMovement(state, zeroPosition))
+        xprimeList.append(rightMovement(state, zeroPosition))
+        xprimeList.append(bottomMovement(state, zeroPosition))
+    elif (N*N)-N < zeroPosition < (N*N)-1:
+        #zero along bottom, only left,right,top
+        xprimeList.append(leftMovement(state, zeroPosition))
+        xprimeList.append(rightMovement(state, zeroPosition))
+        xprimeList.append(topMovement(state, zeroPosition))
+    elif zeroPosition % N == 0:
+        #zero along left side, only right,top, bottom
+        xprimeList.append(bottomMovement(state, zeroPosition))
+        xprimeList.append(rightMovement(state, zeroPosition))
+        xprimeList.append(topMovement(state, zeroPosition))
+    elif zeroPosition % N == 2:
+        #zero along right side, only left,top, bottom
+        xprimeList.append(bottomMovement(state, zeroPosition))
+        xprimeList.append(leftMovement(state, zeroPosition))
+        xprimeList.append(topMovement(state, zeroPosition))
+    else:
+        xprimeList.append(bottomMovement(state, zeroPosition))
+        xprimeList.append(leftMovement(state, zeroPosition))
+        xprimeList.append(topMovement(state, zeroPosition))
+        xprimeList.append(rightMovement(state, zeroPosition))
+    
+    return xprimeList
 
 if __name__ == "__main__":
-    main(debug)
-
-
-            
+    main()

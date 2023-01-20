@@ -1,11 +1,21 @@
 import time as time
+import collections
+
 xi = [5, 4, 8, 1, 2, 6, 7, 3, 0] #initial state
 xG = [1, 2, 3, 4, 5, 6, 7, 8, 0] #goal state
-queue = [] #the queue
+N = 3 #number of tiles on side
+maxStates = 362880
+
+# xi = [5, 1, 7, 3, 6, 0, 11, 2, 9, 4, 10, 8, 13, 14, 15, 12]
+# xG = [7,11,13,5,4,10,2,6,0,1,5,8,13,9,14,12] #goal state
+# # xG = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0] #goal state
+# N = 4 #number of tiles on side
+# maxStates = 20922789888000
+
+queue = collections.deque() #the queue
 reachedStates = {} #dictionary to hold the stateNbr as key referencing the intersection (which holds the stateList, dist, etc about that state)
 
 goalReached = False #if we have reached the goal or not
-N = 3 #number of tiles on side
 nbrReached = 0
 
 class intersection: #or node
@@ -25,12 +35,13 @@ def main():
     head = intersection(xi, 0)
     goalNbr = createStateNumber(xG)
     reachedStates[createStateNumber(head.stateList)] = head
-
     queue.append(head.stateNbr)
     nbrReached+=1
+
     while queue and not goalReached:
         inx = 0
-        nextIntersection = reachedStates[queue.pop(0)]
+        nextstateNbr = queue.popleft()
+        nextIntersection = reachedStates[nextstateNbr]
         for stateNbr in nextIntersection.nextStatesNbrs:
             newDist = nextIntersection.dist + 1 #each move is the same so just add 1
 
@@ -40,15 +51,16 @@ def main():
                 if newDist < oldDist:
                     reachedStates[stateNbr].dist = newDist #update the next state distance
                     reachedStates[stateNbr].path = nextIntersection.path + [stateNbr]
-                # if goalNbr == stateNbr:
-                #     goalReached = True
-                #     break
+                if goalNbr == stateNbr:
+                    goalReached = True
+                    break
             else:
                 reachedStates[stateNbr] = intersection(nextIntersection.nextStates[inx], newDist)
                 reachedStates[stateNbr].path = nextIntersection.path + [stateNbr]
                 nbrReached+=1
                 # if nbrReached%1000 == 0:
-                #     print("Reached:",nbrReached)
+                    # print(stateNbr)
+                    # print("Reached:",nbrReached, "\tPercentage:", round((nbrReached/maxStates)*100), "%")
                 queue.append(stateNbr)
                 
             inx += 1

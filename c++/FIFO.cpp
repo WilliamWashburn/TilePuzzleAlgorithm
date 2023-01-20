@@ -14,8 +14,9 @@ using std::chrono::milliseconds;
 const int maxNbrOfStates = 500000;
 const int N = 3; //number of tiles on side
 const int nbrOfTiles = 9; //not sure how to make this a const of pow(nbrOfTiles,2)
-int xi[] = {5, 4, 8, 1, 2, 6, 7, 3, 0}; //initial state
-int xG[] = {1, 2, 3, 4, 5, 6, 7, 8, 0}; //goal state
+int xi[] = {5, 4, 8, 1, 2, 6, 7, 3, 0}; //initial state REACHABLE
+int xG[] = {0, 2, 3, 4, 5, 6, 7, 8, 0}; //goal state REACHABLE
+// int xG[] = {1, 2, 3, 4, 5, 6, 7, 8, 0}; //goal state REACHABLE
 int reachedStates[maxNbrOfStates][nbrOfTiles]; //array of state arrays
 int reachedStatesLength = 0; //how many states we have reached. Index of the last reached state in the reachedStates array
 int reachedStatesNumbers[maxNbrOfStates]; //we will store the states here as numbers ie. [5, 4, 8, 1, 0, 6, 7, 2, 3] -> 548106723 to make it faster to check if we have reached the state
@@ -52,7 +53,7 @@ void printState(int* state) {
 //add state to reachedStates[] and reachedStatesNumbers[]
 void addReachedState(int* state) {
     for(int i = 0; i < nbrOfTiles; i++){
-        reachedStates[reachedStatesLength][i] = state[i];
+        reachedStates[reachedStatesLength][i] = state[i]; //copy the state
     }
     reachedStatesNumbers[reachedStatesLength] = createStateNumber(state);
     reachedStatesLength++;
@@ -117,11 +118,11 @@ void printQueue() {
 
 bool checkIfGoalReached(int* statePtr) {
     // I tried to use the stateNbr like with the reached states but its not much faster than to just check each element. It could be helpful if there were many goal states
-    // int stateNbr = createStateNumber(statePtr);
-    // static int xGNbr = createStateNumber(xG);
-    // if (stateNbr != xGNbr) {
-    //     return false;
-    // }
+    int stateNbr = createStateNumber(statePtr);
+    static int xGNbr = createStateNumber(xG);
+    if (stateNbr != xGNbr) {
+        return false;
+    }
     for (int i = 0; i < nbrOfTiles; i++) {
         if (statePtr[i] != xG[i]) {
             return false;
@@ -253,7 +254,7 @@ int returnxprime(int* state, int* primeStates){
 
 void step(){
     if((endOfQueue - frontOfQueue) == 0) {
-        std::cout << "The queue is empty" << std::endl;
+        std::cout << "The queue is empty. Can't step" << std::endl;
         return;
     }
     
@@ -269,10 +270,7 @@ void step(){
     int nbrOfNewStates = returnxprime(firstState, &xprimes[0][0]);
     for(int i = 0; i < nbrOfNewStates; i++){
         // print("xprime:",xprime)
-        if (checkifReached(&xprimes[i][0])){
-            // print("already reached:",xprime)
-        }
-        else{
+        if (!checkifReached(&xprimes[i][0])){
             addReachedState(&xprimes[i][0]);
             addToQueue(&reachedStates[endOfQueue-1][0]);
             if (reachedStatesLength%1000 == 0){
@@ -289,20 +287,21 @@ int main(){
     std::cout << createStateNumber(&reachedStates[0][0]) << std::endl;
 
     auto t1 = high_resolution_clock::now();
-    while ((endOfQueue - frontOfQueue) > 0){
+    while ((endOfQueue - frontOfQueue) > 0 && !goalReached){
         // std::cout << "Press Enter to continue" << std::endl;
         // getchar();
         step();
         // printQueue();
-        if (goalReached){
-            break;
-        }
     }
+    if ((endOfQueue - frontOfQueue) == 0) {
+        std::cout << "Queue is empty" << std::endl;
+    }
+
     auto t2 = high_resolution_clock::now();
     auto ms_int = duration_cast<milliseconds>(t2 - t1);
 
-    std::cout << "Total time: " << round((ms_int.count()/1000)/60) << " min, " <<  round((ms_int.count()/1000)) << " secs, " << round(ms_int.count()) << " ms" << std::endl;
+    std::cout << "Total time: " << round((ms_int.count()/1000)/60) << " min, " <<  round(((ms_int.count()/1000))%60)<< " secs, " << round(ms_int.count()%1000) << " ms" << std::endl;
     std::cout << "Reached: ";
-    std::cout << reachedStatesLength-1;
+    std::cout << reachedStatesLength;
     std::cout << " states"; std::cout<<"\n";
 }
