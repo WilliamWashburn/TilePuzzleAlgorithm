@@ -12,18 +12,23 @@ using std::chrono::duration_cast;
 using std::chrono::duration;
 using std::chrono::milliseconds;
 
-const int maxNbrOfStates = 500000;
+const int maxNbrOfStates = 362880;
 const int N = 3; //number of tiles on side
 const int nbrOfTiles = 9; //not sure how to make this a const of pow(nbrOfTiles,2)
 int xi[] = {5, 4, 8, 1, 2, 6, 7, 3, 0}; //initial state REACHABLE
 int xG[] = {1, 2, 3, 4, 5, 6, 7, 8, 0}; //goal state REACHABLE
-// int reachedStates[maxNbrOfStates][nbrOfTiles]; //array of state arrays
-int reachedStates[maxNbrOfStates][nbrOfTiles]; //array of state arrays
-int reachedStatesLength = 0; //how many states we have reached. Index of the last reached state in the reachedStates array
+
+//reached states
+int nbrOfReachedStates = 0;
 std::map<int,bool> reachedStatesNumbers; //we will store the states here as numbers ie. [5, 4, 8, 1, 0, 6, 7, 2, 3] -> 548106723 to make it faster to check if we have reached the state
-int* queue[maxNbrOfStates]; //the queue. Holds pointers to states stored in reachedStates[]
+
+//queue
+// const int queueSize = 362880;
+const int queueSize = 24000;
+int queue[queueSize][nbrOfTiles]; //the queue. Holds pointers to states stored in reachedStates[]
 int frontOfQueue = 0; //keep track of the front of the queue
 int endOfQueue = 0; //keeps track of the end of the queue
+int maxSizeOfQueue = 0;
 
 bool goalReached = false; //if we have reached the goal or not
 
@@ -53,36 +58,27 @@ void printState(int* state) {
 //REACHED STATES
 //add state to reachedStates[] and reachedStatesNumbers[]
 void addReachedState(int* state) {
-    for(int i = 0; i < nbrOfTiles; i++){
-        reachedStates[reachedStatesLength][i] = state[i]; //copy the state
-    }
-    // reachedStatesNumbers[reachedStatesLength] = createStateNumber(state);
     reachedStatesNumbers[createStateNumber(state)] = true;
-    reachedStatesLength++;
+    nbrOfReachedStates++;
 }
 
 void printReachedStates() {
-    std::cout << "reachedStatesLength: " << reachedStatesLength << std::endl;
-    std::cout << "Reached States: " << std::endl;
-    for (int i = 0; i < reachedStatesLength; i++){
-        std::cout << "[";
-        for (int j = 0; j < nbrOfTiles; j++){
-            std::cout << reachedStates[i][j];
-            if (j != nbrOfTiles - 1) {
-                std::cout << ", ";
-            }
-        }
-        std::cout << "]" << std::endl;
-    }
+    // std::cout << "nbrOfReachedStates: " << nbrOfReachedStates << std::endl;
+    // std::cout << "Reached States: " << std::endl;
+    // for (int i = 0; i < nbrOfReachedStates; i++){
+    //     std::cout << "[";
+    //     for (int j = 0; j < nbrOfTiles; j++){
+    //         std::cout << reachedStates[i][j];
+    //         if (j != nbrOfTiles - 1) {
+    //             std::cout << ", ";
+    //         }
+    //     }
+    //     std::cout << "]" << std::endl;
+    // }
 }
 
 bool checkifReached(int* state){
     int stateNbr = createStateNumber(state);
-    // for (int i = 0; i < reachedStatesLength; i++){
-        // if(reachedStatesNumbers[i] == stateNbr) {
-        //     return true;
-        // }
-    // }
     if(reachedStatesNumbers.count(stateNbr)) {
             return true;
     }
@@ -91,34 +87,59 @@ bool checkifReached(int* state){
 
 //QUEUED STATES
 // add state to queue[]. queue[] just stores pointers to arrays in reachedStates[][]
-void addToQueue(int* reachedState) {
-    queue[endOfQueue] = reachedState;
+bool addToQueue(int* state) {
+    for(int i = 0; i < nbrOfTiles; i++){
+        queue[endOfQueue][i] = state[i]; //copy the state
+    }
     endOfQueue++;
+
+    // //wrap around if too large
+    if(endOfQueue == queueSize - 1) {
+        endOfQueue = 0;
+        // std::cout << "wrapping end" << std::endl;
+    }
+
+    if(endOfQueue == frontOfQueue) {
+        std::cout << "Overflow!" << std::endl;
+        return false;
+    }
+
+    // int queueLength = (queueSize + (endOfQueue - frontOfQueue) + 1 ) % queueSize;
+    // if(queueLength > maxSizeOfQueue) {
+    //     maxSizeOfQueue = queueLength;
+    // }
+    return true;
 }
 
 //return the first pointer in the queue, moves the front of the queue forward
 int* getFirstFromQueue() {
-    if (endOfQueue == 0) {
+    if (endOfQueue == frontOfQueue) {
         std::cout << "queue length equal to 0! Can't shift" << std::endl;
         return nullptr;
     }
-    if (endOfQueue > maxNbrOfStates) {
+    if (endOfQueue > queueSize) {
         std::cout << "queue overflow! Can't shift" << std::endl;
         return nullptr;
     }
-    int* ptrToFirst = queue[frontOfQueue];
+    int* ptrToFirst = &queue[frontOfQueue][0];
     frontOfQueue++;
+    //wrap around if too large
+    if(frontOfQueue == queueSize - 1) {
+        frontOfQueue = 0;
+        // std::cout << "wrapping front" << std::endl;
+    }
     return ptrToFirst;
 }
 
 void printQueue() {
-    std::cout << "QueueLength: " << endOfQueue - frontOfQueue << std::endl;
-    std::cout << "Queue: " << std::endl;
-    for (int i = frontOfQueue; i < endOfQueue; i++){
-        int* ptrToState = queue[i];
-        printState(ptrToState);
-    }
-    std::cout << endl;
+    // std::cout << "QueueLength: " << endOfQueue - frontOfQueue << std::endl;
+    // std::cout << "Queue: " << std::endl;
+    // for (int i = frontOfQueue; i < endOfQueue; i++){
+    //     int* ptrToState = &queue[i][0];
+    //     printState(ptrToState);
+    // }
+    // std::cout << endl;
+    std::cout << "printQueue() is deprecated" << endl;
 }
 
 bool checkIfGoalReached(int* statePtr) {
@@ -258,7 +279,7 @@ int returnxprime(int* state, int* primeStates){
 }
 
 void step(){
-    if((endOfQueue - frontOfQueue) == 0) {
+    if(endOfQueue == frontOfQueue) {
         std::cout << "The queue is empty. Can't step" << std::endl;
         return;
     }
@@ -277,9 +298,9 @@ void step(){
         // print("xprime:",xprime)
         if (!checkifReached(&xprimes[i][0])){
             addReachedState(&xprimes[i][0]);
-            addToQueue(&reachedStates[endOfQueue-1][0]);
-            if (reachedStatesLength%1000 == 0){
-                std::cout << "Reached: " << reachedStatesLength << std::endl;
+            addToQueue(&xprimes[i][0]);
+            if (nbrOfReachedStates%1000 == 0){
+                std::cout << "Reached: " << nbrOfReachedStates << std::endl;
             }
         }
     }
@@ -288,11 +309,11 @@ void step(){
 int main(){
     std::cout << "Beginning!" << std::endl;
     addReachedState(xi);
-    addToQueue(&reachedStates[0][0]);
-    std::cout << createStateNumber(&reachedStates[0][0]) << std::endl;
+    addToQueue(xi);
+    std::cout << createStateNumber(xi) << std::endl;
 
-    auto t1 = high_resolution_clock::now();
-    while ((endOfQueue - frontOfQueue) > 0 && !goalReached){
+    std::chrono::steady_clock::time_point t1 = high_resolution_clock::now();
+    while ((endOfQueue != frontOfQueue) && !goalReached){
         // std::cout << "Press Enter to continue" << std::endl;
         // getchar();
         step();
@@ -302,11 +323,13 @@ int main(){
         std::cout << "Queue is empty" << std::endl;
     }
 
-    auto t2 = high_resolution_clock::now();
-    auto ms_int = duration_cast<milliseconds>(t2 - t1);
+    std::chrono::steady_clock::time_point t2 = high_resolution_clock::now();
+    std::chrono::duration<long long, std::ratio<1, 1000> > ms_int = duration_cast<milliseconds>(t2 - t1);
 
     std::cout << "Total time: " << round((ms_int.count()/1000)/60) << " min, " <<  round(((ms_int.count()/1000))%60)<< " secs, " << round(ms_int.count()%1000) << " ms" << std::endl;
     std::cout << "Reached: ";
-    std::cout << reachedStatesLength;
+    std::cout << nbrOfReachedStates;
     std::cout << " states"; std::cout<<"\n";
+
+    // std::cout << "maxSizeOfQueue:" << maxSizeOfQueue << std::endl;
 }
