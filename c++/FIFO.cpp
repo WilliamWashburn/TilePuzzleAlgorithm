@@ -32,8 +32,10 @@ std::map<string,bool> reachedStatesStrings; //we will store the states here as n
 
 //queue
 // const int queueSize = 362880;
-const int queueSize = 24000;
-int queue[queueSize][nbrOfTiles]; //the queue. Holds pointers to states stored in reachedStates[]
+// const long long int queueSize = 20922789888000; #this is how many states there are
+const long long int queueSize = 362880000;
+int** queue = new int*[queueSize]; //the queue. Holds pointers to states stored in reachedStates[]
+
 int frontOfQueue = 0; //keep track of the front of the queue
 int endOfQueue = 0; //keeps track of the end of the queue
 int maxSizeOfQueue = 0;
@@ -336,6 +338,9 @@ void step(){
 }
 
 int main(){
+    for(int i = 0; i < queueSize; ++i){
+        queue[i] = new int[nbrOfTiles];
+    }
     std::cout << "Beginning!" << std::endl;
     addReachedState(xi);
     addToQueue(xi);
