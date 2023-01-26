@@ -5,6 +5,7 @@
 #include <math.h>
 #include <chrono>
 #include <sstream>
+#include <map>
 using namespace std;
 using std::chrono::high_resolution_clock;
 using std::chrono::duration_cast;
@@ -15,11 +16,11 @@ const int maxNbrOfStates = 500000;
 const int N = 3; //number of tiles on side
 const int nbrOfTiles = 9; //not sure how to make this a const of pow(nbrOfTiles,2)
 int xi[] = {5, 4, 8, 1, 2, 6, 7, 3, 0}; //initial state REACHABLE
-int xG[] = {0, 2, 3, 4, 5, 6, 7, 8, 0}; //goal state REACHABLE
-// int xG[] = {1, 2, 3, 4, 5, 6, 7, 8, 0}; //goal state REACHABLE
+int xG[] = {1, 2, 3, 4, 5, 6, 7, 8, 0}; //goal state REACHABLE
+// int reachedStates[maxNbrOfStates][nbrOfTiles]; //array of state arrays
 int reachedStates[maxNbrOfStates][nbrOfTiles]; //array of state arrays
 int reachedStatesLength = 0; //how many states we have reached. Index of the last reached state in the reachedStates array
-int reachedStatesNumbers[maxNbrOfStates]; //we will store the states here as numbers ie. [5, 4, 8, 1, 0, 6, 7, 2, 3] -> 548106723 to make it faster to check if we have reached the state
+std::map<int,bool> reachedStatesNumbers; //we will store the states here as numbers ie. [5, 4, 8, 1, 0, 6, 7, 2, 3] -> 548106723 to make it faster to check if we have reached the state
 int* queue[maxNbrOfStates]; //the queue. Holds pointers to states stored in reachedStates[]
 int frontOfQueue = 0; //keep track of the front of the queue
 int endOfQueue = 0; //keeps track of the end of the queue
@@ -55,7 +56,8 @@ void addReachedState(int* state) {
     for(int i = 0; i < nbrOfTiles; i++){
         reachedStates[reachedStatesLength][i] = state[i]; //copy the state
     }
-    reachedStatesNumbers[reachedStatesLength] = createStateNumber(state);
+    // reachedStatesNumbers[reachedStatesLength] = createStateNumber(state);
+    reachedStatesNumbers[createStateNumber(state)] = true;
     reachedStatesLength++;
 }
 
@@ -76,10 +78,13 @@ void printReachedStates() {
 
 bool checkifReached(int* state){
     int stateNbr = createStateNumber(state);
-    for (int i = 0; i < reachedStatesLength; i++){
-        if(reachedStatesNumbers[i] == stateNbr) {
+    // for (int i = 0; i < reachedStatesLength; i++){
+        // if(reachedStatesNumbers[i] == stateNbr) {
+        //     return true;
+        // }
+    // }
+    if(reachedStatesNumbers.count(stateNbr)) {
             return true;
-        }
     }
     return false;
 }
