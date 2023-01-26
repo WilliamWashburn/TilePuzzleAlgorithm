@@ -22,13 +22,13 @@ using std::chrono::milliseconds;
 const long maxNbrOfStates = 362880;
 const int N = 4; //number of tiles on side
 const int nbrOfTiles = 16; //not sure how to make this a const of pow(nbrOfTiles,2)
-// int xi[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 0, 13, 14, 15, 12};
-int xi[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0};
+int xi[] = {1, 6, 2, 4, 5, 11, 10, 7, 13, 0, 3, 9, 14, 15, 12, 8}; //easy
+// int xG[] = {6, 2, 3, 4, 1, 10, 0, 7, 13, 12, 11, 9, 5, 14, 15, 8};
 int xG[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0};
 
 //reached states
 int nbrOfReachedStates = 0;
-std::map<int,bool> reachedStatesNumbers; //we will store the states here as numbers ie. [5, 4, 8, 1, 0, 6, 7, 2, 3] -> 548106723 to make it faster to check if we have reached the state
+std::map<string,bool> reachedStatesStrings; //we will store the states here as numbers ie. [5, 4, 8, 1, 0, 6, 7, 2, 3] -> 548106723 to make it faster to check if we have reached the state
 
 //queue
 // const int queueSize = 362880;
@@ -41,17 +41,29 @@ int maxSizeOfQueue = 0;
 bool goalReached = false; //if we have reached the goal or not
 
 //turns a state [5, 4, 8, 1, 0, 6, 7, 2, 3] into a number 548106723 to store in reachedStatesNumbers[]. This makes it faster to check if a state has been reached becase we dont have to compare each element in the list, just a single number representing that list
-int createStateNumber(int* state){
+// int createStateNumber(int* state){
+//     char stateStr[30];
+//     strcpy(stateStr,"");
+//     for (int i = 0; i < (N*N)-1; i++){
+//         strcat(stateStr,to_string(state[i]).c_str());
+//         // std::cout << to_string(state[i]).c_str() << std::endl;
+//     }
+//     std::cout << stateStr << std::endl;
+//     std::cout << stoull(stateStr) << std::endl;
+
+//     return atoi(stateStr);
+// }
+
+string createStateNumberString(int* state){
     char stateStr[30];
     strcpy(stateStr,"");
     for (int i = 0; i < (N*N)-1; i++){
         strcat(stateStr,to_string(state[i]).c_str());
         // std::cout << to_string(state[i]).c_str() << std::endl;
     }
-    std::cout << stateStr << std::endl;
-    std::cout << stoull(stateStr) << std::endl;
+    // std::cout << stateStr << std::endl;
 
-    return atoi(stateStr);
+    return stateStr;
 }
 
 //for printing a state, just pass the pointer to the beginning of the array
@@ -70,7 +82,8 @@ void printState(int* state) {
 //REACHED STATES
 //add state to reachedStates[] and reachedStatesNumbers[]
 void addReachedState(int* state) {
-    reachedStatesNumbers[createStateNumber(state)] = true;
+    // reachedStatesNumbers[createStateNumber(state)] = true;
+    reachedStatesStrings[createStateNumberString(state)] = true;
     nbrOfReachedStates++;
 }
 
@@ -90,8 +103,8 @@ void printReachedStates() {
 }
 
 bool checkifReached(int* state){
-    int stateNbr = createStateNumber(state);
-    if(reachedStatesNumbers.count(stateNbr)) {
+    string stateNbr = createStateNumberString(state);
+    if(reachedStatesStrings.count(stateNbr)) {
             return true;
     }
     return false;
@@ -116,10 +129,10 @@ bool addToQueue(int* state) {
         return false;
     }
 
-    // int queueLength = (queueSize + (endOfQueue - frontOfQueue) + 1 ) % queueSize;
-    // if(queueLength > maxSizeOfQueue) {
-    //     maxSizeOfQueue = queueLength;
-    // }
+    int queueLength = (queueSize + (endOfQueue - frontOfQueue) + 1 ) % queueSize;
+    if(queueLength > maxSizeOfQueue) {
+        maxSizeOfQueue = queueLength;
+    }
     return true;
 }
 
@@ -156,8 +169,8 @@ void printQueue() {
 
 bool checkIfGoalReached(int* statePtr) {
     // I tried to use the stateNbr like with the reached states but its not much faster than to just check each element. It could be helpful if there were many goal states
-    int stateNbr = createStateNumber(statePtr);
-    static int xGNbr = createStateNumber(xG);
+    string stateNbr = createStateNumberString(statePtr);
+    static string xGNbr = createStateNumberString(xG);
     if (stateNbr != xGNbr) {
         return false;
     }
@@ -312,8 +325,11 @@ void step(){
         if (!checkifReached(&xprimes[i][0])){
             addReachedState(&xprimes[i][0]);
             addToQueue(&xprimes[i][0]);
-            if (nbrOfReachedStates%1000 == 0){
+            if (nbrOfReachedStates%100000 == 0){
                 std::cout << "Reached: " << nbrOfReachedStates << std::endl;
+                std::cout << "maxSizeOfQueue:" << maxSizeOfQueue << "\t" << ((float)maxSizeOfQueue/queueSize)*100.0 << "%" << std::endl;
+                printState(&xprimes[i][0]);
+                std::cout << "\n" << std::endl;
             }
         }
     }
@@ -323,26 +339,26 @@ int main(){
     std::cout << "Beginning!" << std::endl;
     addReachedState(xi);
     addToQueue(xi);
-    std::cout << createStateNumber(xi) << std::endl;
+    std::cout << createStateNumberString(xi) << std::endl;
 
-    // std::chrono::steady_clock::time_point t1 = high_resolution_clock::now();
-    // while ((endOfQueue != frontOfQueue) && !goalReached){
-    //     // std::cout << "Press Enter to continue" << std::endl;
-    //     // getchar();
-    //     step();
-    //     // printQueue();
-    // }
-    // if ((endOfQueue - frontOfQueue) == 0) {
-    //     std::cout << "Queue is empty" << std::endl;
-    // }
+    std::chrono::steady_clock::time_point t1 = high_resolution_clock::now();
+    while ((endOfQueue != frontOfQueue) && !goalReached){
+        // std::cout << "Press Enter to continue" << std::endl;
+        // getchar();
+        step();
+        // printQueue();
+    }
+    if ((endOfQueue - frontOfQueue) == 0) {
+        std::cout << "Queue is empty" << std::endl;
+    }
 
-    // std::chrono::steady_clock::time_point t2 = high_resolution_clock::now();
-    // std::chrono::duration<long long, std::ratio<1, 1000> > ms_int = duration_cast<milliseconds>(t2 - t1);
+    std::chrono::steady_clock::time_point t2 = high_resolution_clock::now();
+    std::chrono::duration<long long, std::ratio<1, 1000> > ms_int = duration_cast<milliseconds>(t2 - t1);
 
-    // std::cout << "Total time: " << round((ms_int.count()/1000)/60) << " min, " <<  round(((ms_int.count()/1000))%60)<< " secs, " << round(ms_int.count()%1000) << " ms" << std::endl;
-    // std::cout << "Reached: ";
-    // std::cout << nbrOfReachedStates;
-    // std::cout << " states"; std::cout<<"\n";
+    std::cout << "Total time: " << round((ms_int.count()/1000)/60) << " min, " <<  round(((ms_int.count()/1000))%60)<< " secs, " << round(ms_int.count()%1000) << " ms" << std::endl;
+    std::cout << "Reached: ";
+    std::cout << nbrOfReachedStates;
+    std::cout << " states"; std::cout<<"\n";
 
-    // std::cout << "maxSizeOfQueue:" << maxSizeOfQueue << std::endl;
+    std::cout << "maxSizeOfQueue:" << maxSizeOfQueue << std::endl;
 }
