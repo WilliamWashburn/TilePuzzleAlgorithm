@@ -2,17 +2,18 @@ import time as time
 import collections
 import math
 
-xi = [5, 4, 8, 1, 2, 6, 7, 3, 0] #initial state
-xG = [1, 2, 3, 4, 5, 6, 7, 8, 0] #goal state
-N = 3 #number of tiles on side
-maxStates = 362880
+# xi = [5, 4, 8, 1, 2, 6, 7, 3, 0] #initial state
+# xG = [1, 2, 3, 4, 5, 6, 7, 8, 0] #goal state
+# N = 3 #number of tiles on side
+# maxStates = 362880
 
-# xi = [5, 1, 7, 3, 6, 0, 11, 2, 9, 4, 10, 8, 13, 14, 15, 12]
+xi = [5, 1, 7, 3, 6, 0, 11, 2, 9, 4, 10, 8, 13, 14, 15, 12]
 # xG = [7,11,13,5,4,10,2,6,0,1,5,8,13,9,14,12] #goal state
-# # xG = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0] #goal state
-# N = 4 #number of tiles on side
-# maxStates = 20922789888000
+xG = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0] #goal state
+N = 4 #number of tiles on side
+maxStates = 20922789888000
 
+# queue = [] #the queue
 queue = collections.deque() #the queue
 reachedStates = {} # holds the stateNbr as key referencing the intersection (which holds the stateList, dist, etc about that state)
 
@@ -27,6 +28,8 @@ class intersection: #or node
         self.stateNbr = createStateNumber(self.stateList)
         self.nextStates = returnxprime(self.stateList)
         self.nextStatesNbrs = list(map(createStateNumber, self.nextStates)) #Stores the state number (ie 548126730 for state, [5, 4, 8, 1, 2, 6, 7, 3, 0])
+        self.distToGoal = evaluateToGoal(self.stateList, xG)
+        self.heuristic = self.distToGoal + self.dist
 
 def evaluateToGoal(state, goal):
     sum = 0
@@ -37,6 +40,11 @@ def evaluateToGoal(state, goal):
         # print("For: ", pos, "\n", rowDist,",",columnDist)
         sum += (columnDist+rowDist)
     return sum
+
+def sortQueue(queue):
+    items = [queue.pop() for x in range(len(queue))]
+    items.sort(key = lambda x: x.heuristic)
+    queue.extend(items)
             
 def main():
     global nbrReached
@@ -50,11 +58,14 @@ def main():
     nbrReached+=1
     
     while queue and not goalReached:
+        sortQueue(queue)
+        
+        # currentIntersection = queue.pop()
         currentIntersection = queue.popleft()
         
         if goalNbr == currentIntersection.stateNbr:
             goalReached = True
-            nextIntersection = intersection(currentIntersection.nextStates[inx], newDist)
+            nextIntersection = intersection(xG, newDist)
             nextIntersection.path = currentIntersection.path + [stateNbr]
             queue.append(nextIntersection)
             reachedStates[stateNbr] = nextIntersection
@@ -72,9 +83,9 @@ def main():
                     reachedStates[stateNbr].path = currentIntersection.path + [stateNbr]
             else:
                 nbrReached+=1
-                # if nbrReached%1000 == 0:
-                    # print(stateNbr)
-                    # print("Reached:",nbrReached, "\tPercentage:", round((nbrReached/maxStates)*100), "%")
+                # if nbrReached%10000 == 0:
+                #     print(stateNbr)
+                #     print("Reached:",nbrReached, "\tPercentage:", round((nbrReached/maxStates)*100), "%")
                 nextIntersection = intersection(currentIntersection.nextStates[inx], newDist)
                 nextIntersection.path = currentIntersection.path + [stateNbr]
                 queue.append(nextIntersection)
