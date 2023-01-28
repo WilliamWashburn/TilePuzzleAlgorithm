@@ -7,6 +7,7 @@
 #include <sstream>
 #include <map>
 #include <string> //stoull
+#include <set>
 using namespace std;
 using std::chrono::high_resolution_clock;
 using std::chrono::duration_cast;
@@ -18,22 +19,24 @@ using std::chrono::milliseconds;
 // const int nbrOfTiles = 9; //not sure how to make this a const of pow(nbrOfTiles,2)
 // int xi[] = {5, 4, 8, 1, 2, 6, 7, 3, 0};
 // int xG[] = {1, 2, 3, 4, 5, 6, 7, 8, 0};
+// const long long int queueSize = 24000;
 
+// the 4x4 puzzle uses too much memory. I think I need to write reached states to the drive
 const long maxNbrOfStates = 362880;
 const int N = 4; //number of tiles on side
 const int nbrOfTiles = 16; //not sure how to make this a const of pow(nbrOfTiles,2)
 int xi[] = {1, 6, 2, 4, 5, 11, 10, 7, 13, 0, 3, 9, 14, 15, 12, 8}; //easy
 // int xG[] = {6, 2, 3, 4, 1, 10, 0, 7, 13, 12, 11, 9, 5, 14, 15, 8};
 int xG[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0};
+const long long int queueSize = 362880000;
 
 //reached states
 int nbrOfReachedStates = 0;
-std::map<string,bool> reachedStatesStrings; //we will store the states here as numbers ie. [5, 4, 8, 1, 0, 6, 7, 2, 3] -> 548106723 to make it faster to check if we have reached the state
+std::set<string> reachedStatesStrings; //we will store the states here as numbers ie. [5, 4, 8, 1, 0, 6, 7, 2, 3] -> 548106723 to make it faster to check if we have reached the state
 
 //queue
 // const int queueSize = 362880;
 // const long long int queueSize = 20922789888000; #this is how many states there are
-const long long int queueSize = 362880000;
 int** queue = new int*[queueSize]; //the queue. Holds pointers to states stored in reachedStates[]
 
 int frontOfQueue = 0; //keep track of the front of the queue
@@ -85,7 +88,7 @@ void printState(int* state) {
 //add state to reachedStates[] and reachedStatesNumbers[]
 void addReachedState(int* state) {
     // reachedStatesNumbers[createStateNumber(state)] = true;
-    reachedStatesStrings[createStateNumberString(state)] = true;
+    reachedStatesStrings.insert(createStateNumberString(state));
     nbrOfReachedStates++;
 }
 
