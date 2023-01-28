@@ -14,7 +14,7 @@ maxStates = 362880
 # maxStates = 20922789888000
 
 queue = collections.deque() #the queue
-reachedStates = {} #dictionary to hold the stateNbr as key referencing the intersection (which holds the stateList, dist, etc about that state)
+reachedStates = {} # holds the stateNbr as key referencing the intersection (which holds the stateList, dist, etc about that state)
 
 goalReached = False #if we have reached the goal or not
 nbrReached = 0
@@ -45,37 +45,42 @@ def main():
 
     head = intersection(xi, 0)
     goalNbr = createStateNumber(xG)
-    reachedStates[createStateNumber(head.stateList)] = head
-    queue.append(head.stateNbr)
+    reachedStates[head.stateNbr] = head
+    queue.append(head)
     nbrReached+=1
-
+    
     while queue and not goalReached:
-        inx = 0
-        nextstateNbr = queue.popleft()
-        nextIntersection = reachedStates[nextstateNbr]
-        for stateNbr in nextIntersection.nextStatesNbrs:
-            newDist = nextIntersection.dist + 1 #each move is the same so just add 1
+        currentIntersection = queue.popleft()
+        
+        if goalNbr == currentIntersection.stateNbr:
+            goalReached = True
+            nextIntersection = intersection(currentIntersection.nextStates[inx], newDist)
+            nextIntersection.path = currentIntersection.path + [stateNbr]
+            queue.append(nextIntersection)
+            reachedStates[stateNbr] = nextIntersection
+            break
+        
+        for inx, stateNbr in enumerate(currentIntersection.nextStatesNbrs):
+            newDist = currentIntersection.dist + 1 #each move is the same so just add 1
 
             #check if already reached
             if stateNbr in reachedStates:
+                pass
                 oldDist = reachedStates[stateNbr].dist
                 if newDist < oldDist:
                     reachedStates[stateNbr].dist = newDist #update the next state distance
-                    reachedStates[stateNbr].path = nextIntersection.path + [stateNbr]
-                if goalNbr == stateNbr:
-                    goalReached = True
-                    break
+                    reachedStates[stateNbr].path = currentIntersection.path + [stateNbr]
             else:
-                reachedStates[stateNbr] = intersection(nextIntersection.nextStates[inx], newDist)
-                reachedStates[stateNbr].path = nextIntersection.path + [stateNbr]
                 nbrReached+=1
                 # if nbrReached%1000 == 0:
                     # print(stateNbr)
                     # print("Reached:",nbrReached, "\tPercentage:", round((nbrReached/maxStates)*100), "%")
-                queue.append(stateNbr)
-                
-            inx += 1
+                nextIntersection = intersection(currentIntersection.nextStates[inx], newDist)
+                nextIntersection.path = currentIntersection.path + [stateNbr]
+                queue.append(nextIntersection)
+                reachedStates[stateNbr] = nextIntersection
 
+                
     endTime = time.time()
     totalTime = endTime - startTime 
     print("Finished in " + str(round(totalTime/60)) + " min, " + str(round(totalTime%60)) + " secs, " + str(round(((totalTime%60)*1000)%1000)) + " ms\n")
@@ -94,28 +99,6 @@ def createStateNumber(state):
     for i in state:
         stateStr += str(i)
     return int(stateStr)
-
-def step():
-    global nbrReached
-    global goalReached
-    if not queue:
-        print("The queue is empty")
-        return
-    
-    firstState = queue.pop(0)
-    if firstState == xG:
-        print("Goal Reached!")
-        goalReached = True
-        return
-    for xprime in returnxprime(firstState):
-        if checkifReached(xprime):
-            pass
-        else:
-            reachedStates.append(createStateNumber(xprime))
-            queue.append(xprime)
-            nbrReached += 1
-            if nbrReached%1000 == 0:
-                print("Reached:",nbrReached)
 
 def checkifReached(state):
     stateNbr = createStateNumber(state)
@@ -152,7 +135,7 @@ def bottomMovement(state, zeroPosition):
     newState[zeroPosition + N] = state[zeroPosition]
     return newState
 
-def returnxprime(state): #state is a list [5, 4, 8, 1, 2, 6, 7, 3, 0]
+def returnxprime(state):
     xprimeList = [] # a list of all the new possible states
     zeroPosition = state.index(0)
     #check corners
