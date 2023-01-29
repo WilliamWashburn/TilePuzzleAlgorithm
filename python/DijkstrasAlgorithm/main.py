@@ -1,5 +1,6 @@
 import time as time
 import collections
+import math
 
 xi = [5, 4, 8, 1, 2, 6, 7, 3, 0] #initial state
 xG = [1, 2, 3, 4, 5, 6, 7, 8, 0] #goal state
@@ -26,7 +27,29 @@ class intersection: #or node
         self.stateNbr = createStateNumber(self.stateList)
         self.nextStates = returnxprime(self.stateList)
         self.nextStatesNbrs = list(map(createStateNumber, self.nextStates)) #Stores the state number (ie 548126730 for state, [5, 4, 8, 1, 2, 6, 7, 3, 0])
+        self.heuristic = self.dist
 
+def evaluateToGoal(state, goal):
+    sum = 0
+    for inx, pos in enumerate(state):
+        desiredInx = goal.index(pos)
+        rowDist = abs(inx % N - desiredInx % N)
+        columnDist = abs(math.floor(inx/N) - math.floor(desiredInx/N))
+        # print("For: ", pos, "\n", rowDist,",",columnDist)
+        sum += (columnDist+rowDist)
+    return sum
+
+def sortQueue(queue):
+    items = [queue.pop() for x in range(len(queue))] #gives a list of keys
+    intersections = []
+    for key in items:
+        intersections.append(reachedStates[key])
+    intersections.sort(key = lambda x: x.heuristic)
+    stateNbrs = []
+    for intersectionSorted in intersections:
+        stateNbrs.append(intersectionSorted.stateNbr)
+    queue.extend(stateNbrs)
+    
 def main():
     global nbrReached
     global goalReached
@@ -39,32 +62,40 @@ def main():
     nbrReached+=1
 
     while queue and not goalReached:
-        inx = 0
-        nextstateNbr = queue.popleft()
-        nextIntersection = reachedStates[nextstateNbr]
-        for stateNbr in nextIntersection.nextStatesNbrs:
-            newDist = nextIntersection.dist + 1 #each move is the same so just add 1
+        sortQueue(queue)
+            
+        currentStateNbr = queue.popleft()
+        currentIntersection = reachedStates[currentStateNbr]
+        
+        if goalNbr == currentStateNbr:
+            goalReached = True
+            nextIntersection = intersection(xG, newDist)
+            nextIntersection.path = currentIntersection.path + [currentStateNbr]
+            queue.append(nextIntersection.stateNbr)
+            reachedStates[currentStateNbr] = nextIntersection
+            break
+        
+        for inx, stateNbr in enumerate(currentIntersection.nextStatesNbrs):
+            newDist = currentIntersection.dist + 1 #each move is the same so just add 1
 
             #check if already reached
             if stateNbr in reachedStates:
+                pass
                 oldDist = reachedStates[stateNbr].dist
                 if newDist < oldDist:
                     reachedStates[stateNbr].dist = newDist #update the next state distance
-                    reachedStates[stateNbr].path = nextIntersection.path + [stateNbr]
-                if goalNbr == stateNbr:
-                    goalReached = True
-                    break
+                    reachedStates[stateNbr].path = currentIntersection.path + [stateNbr]
+                    
             else:
-                reachedStates[stateNbr] = intersection(nextIntersection.nextStates[inx], newDist)
-                reachedStates[stateNbr].path = nextIntersection.path + [stateNbr]
                 nbrReached+=1
-                # if nbrReached%1000 == 0:
-                    # print(stateNbr)
-                    # print("Reached:",nbrReached, "\tPercentage:", round((nbrReached/maxStates)*100), "%")
-                queue.append(stateNbr)
+                if nbrReached%1000 == 0:
+                    print(stateNbr)
+                    print("Reached:",nbrReached, "\tPercentage:", round((nbrReached/maxStates)*100), "%")
+                nextIntersection = intersection(currentIntersection.nextStates[inx], newDist)
+                nextIntersection.path = currentIntersection.path + [stateNbr]
+                queue.append(nextIntersection.stateNbr)
+                reachedStates[stateNbr] = nextIntersection
                 
-            inx += 1
-
     endTime = time.time()
     totalTime = endTime - startTime 
     print("Finished in " + str(round(totalTime/60)) + " min, " + str(round(totalTime%60)) + " secs, " + str(round(((totalTime%60)*1000)%1000)) + " ms\n")
