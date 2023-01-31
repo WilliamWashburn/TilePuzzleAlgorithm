@@ -33,8 +33,8 @@ class intersection: #or node
         self.calcHeuristic()
     
     def calcHeuristic(self):
-        self.heuristic = (self.distToGoal + self.dist)
-        # self.heuristic = (self.distToGoal)
+        # self.heuristic = (self.distToGoal + self.dist)
+        self.heuristic = (self.distToGoal)
         # self.heuristic = (self.dist)
 
 
