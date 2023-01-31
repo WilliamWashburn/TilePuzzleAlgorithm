@@ -30,4 +30,4 @@ from main import *
 # sortQueue(queue,reachedStates)
 # printQueue()
 
-print(evaluateToGoal([1, 13, 5, 10, 9, 2, 7, 4, 3, 0, 11, 8, 14, 6, 15, 12],[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0]))
+print(evaluateToGoal([1, 5, 10, 4, 2, 0, 15, 8, 7, 13, 12, 3, 9, 11, 14, 6],[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0]))

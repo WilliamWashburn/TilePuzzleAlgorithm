@@ -2,21 +2,21 @@ import time as time
 import collections
 import math
 
-xi = [5, 4, 8, 1, 2, 6, 7, 3, 0] #initial state
-xG = [1, 2, 3, 4, 5, 6, 7, 8, 0] #goal state
-N = 3 #number of tiles on side
-maxStates = 362880
+# xi = [5, 4, 8, 1, 2, 6, 7, 3, 0] #initial state
+# xG = [1, 2, 3, 4, 5, 6, 7, 8, 0] #goal state
+# N = 3 #number of tiles on side
+# maxStates = 362880
 
-# xi = [5, 1, 7, 3, 6, 0, 11, 2, 9, 4, 10, 8, 13, 14, 15, 12]
-# xG = [7,11,13,5,4,10,2,6,0,1,5,8,13,9,14,12] #goal state
-# # xG = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0] #goal state
-# N = 4 #number of tiles on side
-# maxStates = 20922789888000
+xi = [5, 1, 7, 3, 6, 0, 11, 2, 9, 4, 10, 8, 13, 14, 15, 12]
+# xG = [7, 11, 13, 5, 4, 10, 2, 6, 0,1,5,8,13,9,14,12] #goal state
+xG = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0] #goal state
+N = 4 #number of tiles on side
+maxStates = 20922789888000
 
-queue = collections.deque() #the queue
-reachedStates = {} #dictionary to hold the stateNbr as key referencing the intersection (which holds the stateList, dist, etc about that state)
+queue = collections.deque() #intersection class
+reachedStates = {} #stateNbrs referencing distances
 
-goalReached = False #if we have reached the goal or not
+goalReached = False
 nbrReached = 0
 
 class intersection: #or node
@@ -24,11 +24,18 @@ class intersection: #or node
         self.stateList = stateList # [5, 4, 8, 1, 2, 6, 7, 3, 0]
         self.dist = dist # the current shortest distance from the start
         self.path = []
+        self.moveList = []
         self.stateNbr = createStateNumber(self.stateList)
-        self.nextStates = returnxprime(self.stateList)
+        self.nextStates, self.nextMoves = returnxprime(self.stateList)
         self.nextStatesNbrs = list(map(createStateNumber, self.nextStates)) #Stores the state number (ie 548126730 for state, [5, 4, 8, 1, 2, 6, 7, 3, 0])
-        self.heuristic = self.dist
-
+        self.distToGoal = evaluateToGoal(self.stateList, xG)
+        self.calcHeuristic()
+    
+    def calcHeuristic(self):
+        self.heuristic = (self.distToGoal + self.dist)
+        # self.heuristic = (self.distToGoal)
+        # self.heuristic = (self.dist)
+        
 def evaluateToGoal(state, goal):
     sum = 0
     for inx, pos in enumerate(state):
@@ -40,15 +47,24 @@ def evaluateToGoal(state, goal):
     return sum
 
 def sortQueue(queue):
-    items = [queue.pop() for x in range(len(queue))] #gives a list of keys
-    intersections = []
-    for key in items:
-        intersections.append(reachedStates[key])
-    intersections.sort(key = lambda x: x.heuristic)
-    stateNbrs = []
-    for intersectionSorted in intersections:
-        stateNbrs.append(intersectionSorted.stateNbr)
-    queue.extend(stateNbrs)
+    items = [queue.pop() for x in range(len(queue))]
+    items.sort(key = lambda x: x.heuristic)
+    queue.extend(items)
+    
+
+def printQueue():
+    queueLength = len(queue)
+    if queueLength > 10:
+        for beginning in range(0,5):
+            state = queue[beginning]
+            print(reachedStates[state].stateList, reachedStates[state].heuristic, reachedStates[state].dist, reachedStates[state].distToGoal)
+        print("...")
+        for end in range(queueLength-1,queueLength-6,-1):
+            state = queue[end]
+            print(reachedStates[state].stateList, reachedStates[state].heuristic, reachedStates[state].dist, reachedStates[state].distToGoal)
+    else:
+        for state in queue:
+            print(reachedStates[state].stateList, reachedStates[state].heuristic, reachedStates[state].dist, reachedStates[state].distToGoal)
     
 def main():
     global nbrReached
@@ -57,22 +73,19 @@ def main():
 
     head = intersection(xi, 0)
     goalNbr = createStateNumber(xG)
-    reachedStates[createStateNumber(head.stateList)] = head
-    queue.append(head.stateNbr)
+    reachedStates[head.stateNbr] = head
+    queue.append(head)
     nbrReached+=1
 
     while queue and not goalReached:
         sortQueue(queue)
             
-        currentStateNbr = queue.popleft()
-        currentIntersection = reachedStates[currentStateNbr]
+        currentIntersection = queue.popleft()
+        currentStateNbr = currentIntersection.stateNbr
         
         if goalNbr == currentStateNbr:
+            print("Goal Reached!")
             goalReached = True
-            nextIntersection = intersection(xG, newDist)
-            nextIntersection.path = currentIntersection.path + [currentStateNbr]
-            queue.append(nextIntersection.stateNbr)
-            reachedStates[currentStateNbr] = nextIntersection
             break
         
         for inx, stateNbr in enumerate(currentIntersection.nextStatesNbrs):
@@ -80,10 +93,11 @@ def main():
 
             #check if already reached
             if stateNbr in reachedStates:
-                pass
                 oldDist = reachedStates[stateNbr].dist
                 if newDist < oldDist:
-                    reachedStates[stateNbr].dist = newDist #update the next state distance
+                    newMoveList = currentIntersection.moveList + [currentIntersection.nextMoves[inx]]
+                    reachedStates[stateNbr].moveList = newMoveList
+                    reachedStates[stateNbr].dist = newDist
                     reachedStates[stateNbr].path = currentIntersection.path + [stateNbr]
                     
             else:
@@ -93,8 +107,9 @@ def main():
                     print("Reached:",nbrReached, "\tPercentage:", round((nbrReached/maxStates)*100), "%")
                 nextIntersection = intersection(currentIntersection.nextStates[inx], newDist)
                 nextIntersection.path = currentIntersection.path + [stateNbr]
-                queue.append(nextIntersection.stateNbr)
-                reachedStates[stateNbr] = nextIntersection
+                nextIntersection.moveList = currentIntersection.moveList + [currentIntersection.nextMoves[inx]]
+                queue.append(nextIntersection)
+                reachedStates[stateNbr] = nextIntersection        
                 
     endTime = time.time()
     totalTime = endTime - startTime 
@@ -102,11 +117,17 @@ def main():
     print("Reached:",nbrReached,"states")
     print("Shortest path to goal:", reachedStates[goalNbr].dist)
 
-    for path in reachedStates[goalNbr].path:
+    # print(len(currentIntersection.path))
+    for inx,path in enumerate(currentIntersection.path):
         if path < 100000000:
-            print("0" + str(path),"->")
+            print("0" + str(path),"->",currentIntersection.moveList[inx])
         else:
-            print(path,"->")
+            print(path,"->",currentIntersection.moveList[inx])
+            # print(path,"->")
+    
+    # print(len(reachedStates[goalNbr].moveList))
+    # for move in reachedStates[goalNbr].moveList:
+    #     print(move)
 
 
 def createStateNumber(state):
@@ -172,26 +193,31 @@ def bottomMovement(state, zeroPosition):
     newState[zeroPosition + N] = state[zeroPosition]
     return newState
 
-def returnxprime(state): #state is a list [5, 4, 8, 1, 2, 6, 7, 3, 0]
+def returnxprime(state):
     xprimeList = [] # a list of all the new possible states
+    moveList = []
     zeroPosition = state.index(0)
     #check corners
     if zeroPosition == 0:
         #top left corner, only right and bottom
         xprimeList.append(rightMovement(state, zeroPosition))
         xprimeList.append(bottomMovement(state, zeroPosition))
+        moveList = ["R","B"]
     elif zeroPosition == N - 1:
         #top right corner, only left and bottom
         xprimeList.append(leftMovement(state, zeroPosition))
         xprimeList.append(bottomMovement(state, zeroPosition))
+        moveList = ["L","B"]
     elif zeroPosition == (N*N)-1:
         #bottom right corner, only left and top
         xprimeList.append(topMovement(state, zeroPosition))
         xprimeList.append(leftMovement(state, zeroPosition))
+        moveList = ["T","L"]
     elif zeroPosition == (N*N)-N:
         #bottom left corner, only top and right
         xprimeList.append(topMovement(state, zeroPosition))
         xprimeList.append(rightMovement(state, zeroPosition))
+        moveList = ["T","R"]
     
     #check edges
     elif zeroPosition < N - 1:
@@ -199,28 +225,33 @@ def returnxprime(state): #state is a list [5, 4, 8, 1, 2, 6, 7, 3, 0]
         xprimeList.append(leftMovement(state, zeroPosition))
         xprimeList.append(rightMovement(state, zeroPosition))
         xprimeList.append(bottomMovement(state, zeroPosition))
+        moveList = ["L","R","B"]
     elif (N*N)-N < zeroPosition < (N*N)-1:
         #zero along bottom, only left,right,top
         xprimeList.append(leftMovement(state, zeroPosition))
         xprimeList.append(rightMovement(state, zeroPosition))
         xprimeList.append(topMovement(state, zeroPosition))
+        moveList = ["L","R","T"]
     elif zeroPosition % N == 0:
         #zero along left side, only right,top, bottom
         xprimeList.append(bottomMovement(state, zeroPosition))
         xprimeList.append(rightMovement(state, zeroPosition))
         xprimeList.append(topMovement(state, zeroPosition))
+        moveList = ["B","R","T"]
     elif zeroPosition % N == 2:
         #zero along right side, only left,top, bottom
         xprimeList.append(bottomMovement(state, zeroPosition))
         xprimeList.append(leftMovement(state, zeroPosition))
         xprimeList.append(topMovement(state, zeroPosition))
+        moveList = ["B","L","T"]
     else:
         xprimeList.append(bottomMovement(state, zeroPosition))
         xprimeList.append(leftMovement(state, zeroPosition))
         xprimeList.append(topMovement(state, zeroPosition))
         xprimeList.append(rightMovement(state, zeroPosition))
+        moveList = ["B","L","T","R"]
     
-    return xprimeList
+    return xprimeList, moveList
 
 if __name__ == "__main__":
     main()

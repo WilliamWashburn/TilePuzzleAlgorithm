@@ -2,19 +2,18 @@ import time as time
 import collections
 import math
 
-xi = [2, 5, 6, 3, 7, 4, 8, 1, 0] #initial state
-xG = [1, 2, 3, 4, 5, 6, 7, 8, 0] #goal state
-N = 3 #number of tiles on side
-maxStates = 362880
+# xi = [5, 4, 8, 1, 2, 6, 7, 3, 0] #initial state
+# xG = [1, 2, 3, 4, 5, 6, 7, 8, 0] #goal state
+# N = 3 #number of tiles on side
+# maxStates = 362880
 
-# # xi = [5, 1, 7, 3, 6, 0, 11, 2, 9, 4, 10, 8, 13, 14, 15, 12]
-# xi = [1, 13, 5, 10, 2, 7, 15, 4, 9, 8, 12, 6, 3, 11, 14, 0]
-# # xG = [7,11,13,5,4,10,2,6,0,1,5,8,13,9,14,12] #goal state
-# xG = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0] #goal state
-# N = 4 #number of tiles on side
-# maxStates = 20922789888000
+# xi = [5, 1, 7, 3, 6, 0, 11, 2, 9, 4, 10, 8, 13, 14, 15, 12]
+xi = [1, 13, 5, 10, 2, 7, 15, 4, 9, 8, 12, 6, 3, 11, 14, 0]
+# xG = [7,11,13,5,4,10,2,6,0,1,5,8,13,9,14,12] #goal state
+xG = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0] #goal state
+N = 4 #number of tiles on side
+maxStates = 20922789888000
 
-# queue = [] #the queue
 queue = collections.deque() #the queue
 reachedStates = {} # holds the stateNbr as key referencing the intersection (which holds the stateList, dist, etc about that state)
 
@@ -31,7 +30,12 @@ class intersection: #or node
         self.nextStates, self.nextMoves = returnxprime(self.stateList)
         self.nextStatesNbrs = list(map(createStateNumber, self.nextStates)) #Stores the state number (ie 548126730 for state, [5, 4, 8, 1, 2, 6, 7, 3, 0])
         self.distToGoal = evaluateToGoal(self.stateList, xG)
-        self.heuristic = self.distToGoal + self.dist
+        self.calcHeuristic()
+    
+    def calcHeuristic(self):
+        self.heuristic = (self.distToGoal + self.dist)
+        # self.heuristic = (self.distToGoal)
+        # self.heuristic = (self.dist)
 
 
 def countInversions(state):
@@ -58,20 +62,38 @@ def evaluateToGoal(state, goal):
     return sum
 
 def sortQueue(queue, reachedStates):
+    # startTime = time.time()
+    #instead do doing this, just sort the queue as normal but if you run into the same state in the step(), update the intersection in the queue. Also have the queue hold intersections, not stateNbrs
     items = [queue.pop() for x in range(len(queue))] #gives a list of keys
     intersections = []
     for key in items:
         intersections.append(reachedStates[key])
     intersections.sort(key = lambda x: x.heuristic)
-    stateNbrs = []
+    # stateNbrs = []
     for intersectionSorted in intersections:
-        stateNbr = intersectionSorted.stateNbr
-        stateNbrs.append(stateNbr)
-    queue.extend(stateNbrs)
+        # stateNbr = intersectionSorted.stateNbr
+        # stateNbrs.append(stateNbr)
+        queue.append(intersectionSorted.stateNbr)
+    # queue.extend(stateNbrs)
+    # endTime = time.time()
+    # print("Time to sort:", (endTime - startTime))
 
 def printQueue():
-    for state in queue:
-        print(reachedStates[state].stateList, reachedStates[state].heuristic)
+    queueLength = len(queue)
+    if queueLength > 10:
+        for beginning in range(0,5):
+            state = queue[beginning]
+            print(reachedStates[state].stateList, reachedStates[state].heuristic, reachedStates[state].dist)
+            # print(reachedStates[state].stateList, reachedStates[state].heuristic, reachedStates[state].dist, reachedStates[state].distToGoal)
+        print("...")
+        for end in range(queueLength-1,queueLength-6,-1):
+            state = queue[end]
+            print(reachedStates[state].stateList, reachedStates[state].heuristic, reachedStates[state].dist)
+            # print(reachedStates[state].stateList, reachedStates[state].heuristic, reachedStates[state].dist, reachedStates[state].distToGoal)
+    else:
+        for state in queue:
+            print(reachedStates[state].stateList, reachedStates[state].heuristic, reachedStates[state].dist)
+            # print(reachedStates[state].stateList, reachedStates[state].heuristic, reachedStates[state].dist, reachedStates[state].distToGoal)
           
 def main():
     global nbrReached
@@ -90,7 +112,6 @@ def main():
     
     while queue and not goalReached:
         sortQueue(queue,reachedStates)
-        
         currentStateNbr = queue.popleft()
         currentIntersection = reachedStates[currentStateNbr]    
         
@@ -112,6 +133,7 @@ def main():
                 oldDist = reachedStates[stateNbr].dist
                 if newDist < oldDist:
                     reachedStates[stateNbr].dist = newDist #update the next state distance
+                    reachedStates[stateNbr].calcHeuristic()
                     reachedStates[stateNbr].path = currentIntersection.path + [stateNbr]
                     reachedStates[stateNbr].moveList = currentIntersection.moveList + [currentIntersection.nextMoves[inx]]
             else:
@@ -120,10 +142,12 @@ def main():
                     printQueue()
                     print("Reached:",nbrReached)
                     print("Queue Length:",len(queue),"\n")
+                    pass
                     
                 nextIntersection = intersection(currentIntersection.nextStates[inx], newDist)
                 nextIntersection.path = currentIntersection.path + [stateNbr]
                 nextIntersection.moveList = currentIntersection.moveList + [currentIntersection.nextMoves[inx]]
+                
                 queue.append(nextIntersection.stateNbr)
                 reachedStates[stateNbr] = nextIntersection
 
