@@ -2,15 +2,15 @@ import time as time
 import collections
 import math
 
-# xi = [5, 4, 8, 1, 2, 6, 7, 3, 0] #initial state
-# xG = [1, 2, 3, 4, 5, 6, 7, 8, 0] #goal state
-# N = 3 #number of tiles on side
+xi = [5, 4, 8, 1, 2, 6, 7, 3, 0] #initial state
+xG = [1, 2, 3, 4, 5, 6, 7, 8, 0] #goal state
+N = 3 #number of tiles on side
 
-# xi = [5, 1, 7, 3, 6, 0, 11, 2, 9, 4, 10, 8, 13, 14, 15, 12]
-xi = [1, 13, 5, 10, 2, 7, 15, 4, 9, 8, 10, 12, 3, 11, 14, 0]
-# xG = [7, 11, 13, 5, 4, 10, 2, 6, 0,1,5,8,13,9,14,12] #goal state
-xG = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0] #goal state
-N = 4 #number of tiles on side
+# # xi = [5, 1, 7, 3, 6, 0, 11, 2, 9, 4, 10, 8, 13, 14, 15, 12]
+# xi = [1, 13, 5, 10, 2, 7, 15, 4, 9, 8, 10, 12, 3, 11, 14, 0]
+# # xG = [7, 11, 13, 5, 4, 10, 2, 6, 0,1,5,8,13,9,14,12] #goal state
+# xG = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 0] #goal state
+# N = 4 #number of tiles on side
 
 previousNbr = {}
 distToState = {}
@@ -22,42 +22,10 @@ prevMove = {}
 queue = collections.deque() #intersection class
 reachedStates = set() #stateNbrs
 
-goalReached = False
-nbrReached = 0
-    
-def calcHeuristic(stateNbr):
-    # heuristic = distToGoal[stateNbr] + distToState[stateNbr]
-    # heuristic = distToGoal[stateNbr]
-    heuristic = distToState[stateNbr]
-    return heuristic
-        
-def evaluateToGoal(state, goal):
-    sum = 0
-    for inx, pos in enumerate(state):
-        desiredInx = goal.index(pos)
-        rowDist = abs(inx % N - desiredInx % N)
-        columnDist = abs(math.floor(inx/N) - math.floor(desiredInx/N))
-        # print("For: ", pos, "\n", rowDist,",",columnDist)
-        sum += (columnDist+rowDist)
-    return sum
-
-def printQueue():
-    queueLength = len(queue)
-    if queueLength > 10:
-        for beginning in range(0,5):
-            state = queue[beginning]
-            print(stateLists[state], heuristic[state])
-        print("...")
-        for end in range(queueLength-1,queueLength-6,-1):
-            state = queue[end]
-            print(stateLists[state], heuristic[state])
-    else:
-        for state in queue:
-            print(stateLists[state], heuristic[state])
-    
 def main():
-    global nbrReached
-    global goalReached
+    nbrReached = 0
+    goalReached = False
+
     startTime = time.time()
 
     goalNbr = createStateNumber(xG)
@@ -76,13 +44,7 @@ def main():
     nbrReached+=1
 
     while queue and not goalReached:
-        
-        currentStateNbr = queue[0]
-        currentInx = 0
-        for inx, comparedStateNbr in enumerate(queue):
-            if heuristic[comparedStateNbr] < heuristic[currentStateNbr]:
-                currentStateNbr = comparedStateNbr
-                currentInx = inx
+        currentStateNbr, currentInx = getStateNbrWithMinHeurisitic()
         del queue[currentInx]
         
         if goalNbr == currentStateNbr:
@@ -121,23 +83,50 @@ def main():
                 
     endTime = time.time()
     totalTime = endTime - startTime 
-    print("Finished in " + str(round(totalTime/60)) + " min, " + str(round(totalTime%60)) + " secs, " + str(round(((totalTime%60)*1000)%1000)) + " ms\n")
-    print("Reached:",nbrReached,"states")
-    # print("Shortest path to goal:", reachedStates[goalNbr].dist)
 
-    # # print(len(currentIntersection.path))
-    # for inx,path in enumerate(currentIntersection.path):
-    #     if path < 100000000:
-    #         print("0" + str(path),"->",currentIntersection.moveList[inx])
-    #     else:
-    #         print(path,"->",currentIntersection.moveList[inx])
-    #         # print(path,"->")
-    
-    # print(len(reachedStates[goalNbr].moveList))
-    # for move in reachedStates[goalNbr].moveList:
-    #     print(move)
     if goalReached:
         printPath()
+    print("Finished in " + str(round(totalTime/60)) + " min, " + str(round(totalTime%60)) + " secs, " + str(round(((totalTime%60)*1000)%1000)) + " ms\n")
+    print("Reached:",nbrReached,"states")
+
+def getStateNbrWithMinHeurisitic():
+    currentStateNbr = queue[0]
+    currentInx = 0
+    for inx, comparedStateNbr in enumerate(queue):
+        if heuristic[comparedStateNbr] < heuristic[currentStateNbr]:
+            currentStateNbr = comparedStateNbr
+            currentInx = inx
+    return currentStateNbr, currentInx
+
+def calcHeuristic(stateNbr):
+    heuristic = distToGoal[stateNbr] + distToState[stateNbr]
+    # heuristic = distToGoal[stateNbr]
+    # heuristic = distToState[stateNbr]
+    return heuristic
+        
+def evaluateToGoal(state, goal):
+    sum = 0
+    for inx, pos in enumerate(state):
+        desiredInx = goal.index(pos)
+        rowDist = abs(inx % N - desiredInx % N)
+        columnDist = abs(math.floor(inx/N) - math.floor(desiredInx/N))
+        # print("For: ", pos, "\n", rowDist,",",columnDist)
+        sum += (columnDist+rowDist)
+    return sum
+
+def printQueue():
+    queueLength = len(queue)
+    if queueLength > 10:
+        for beginning in range(0,5):
+            state = queue[beginning]
+            print(stateLists[state], heuristic[state])
+        print("...")
+        for end in range(queueLength-1,queueLength-6,-1):
+            state = queue[end]
+            print(stateLists[state], heuristic[state])
+    else:
+        for state in queue:
+            print(stateLists[state], heuristic[state])
 
 def printPath():
     count = 0
@@ -147,8 +136,6 @@ def printPath():
         prevNbr = previousNbr[prevNbr]
         count += 1
     print("Path length", count)
-
-
 
 def createStateNumber(state):
     stateStr = ""
@@ -161,7 +148,6 @@ def checkifReached(state):
     if stateNbr in reachedStates:
         return True
     return False
-
 
 def rightMovement(state, zeroPosition):
     # x[i] <=> x[i+1]
