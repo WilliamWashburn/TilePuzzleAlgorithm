@@ -2,7 +2,13 @@ import time as time
 import collections
 import math
 
-xi = [5, 4, 8, 1, 2, 6, 7, 3, 0] #initial state
+import sys
+import getopt
+
+import ast
+
+
+xi = [1, 2, 3, 4, 6, 5, 0, 8, 7] #initial state
 xG = [1, 2, 3, 4, 5, 6, 7, 8, 0] #goal state
 N = 3 #number of tiles on side
 
@@ -23,10 +29,41 @@ queue = collections.deque() #intersection class
 reachedStates = set() #stateNbrs
 
 def main():
+    arg_initial = ""
+    arg_output = ""
+    arg_goal = ""
+    arg_help = "{0} -i <input> -G <goal> -o <output>".format(sys.argv[0])
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "hi:G:o:", ["help", "initial=", 
+        "Goal=", "output="])
+    except:
+        print(arg_help)
+        sys.exit(2)
+    for opt, arg in opts:
+        if opt in ("-h", "--help"):
+            print(arg_help)  # print the help message
+            sys.exit(2)
+        elif opt in ("-i", "--initial"):
+            arg_initial = ast.literal_eval(arg)
+        elif opt in ("-G", "--Goal"):
+            arg_goal = ast.literal_eval(arg)
+        elif opt in ("-o", "--output"):
+            arg_output = arg
+    print('initial:', arg_initial)
+    print('Goal:', arg_goal)
+    print('output:', arg_output)
+    
+    global xi, xG
+    if arg_initial:
+        xi = arg_initial
+    if arg_goal:
+        xG = arg_goal
+        
     nbrReached = 0
     goalReached = False
 
     startTime = time.time()
+        
 
     goalNbr = createStateNumber(xG)
     stateNbr = createStateNumber(xi)
@@ -88,6 +125,19 @@ def main():
         printPath()
     print("Finished in " + str(round(totalTime/60)) + " min, " + str(round(totalTime%60)) + " secs, " + str(round(((totalTime%60)*1000)%1000)) + " ms\n")
     print("Reached:",nbrReached,"states")
+    
+    if(arg_output):
+        savePath(arg_output)
+    
+def savePath(outputFile):
+    f = open(outputFile,"w")
+    prevNbr = createStateNumber(xG)
+    while prevNbr != None:
+        if(prevMove[prevNbr] != None):
+            f.write(prevMove[prevNbr])
+            # f.write(",")
+        prevNbr = previousNbr[prevNbr]    
+    
 
 def getStateNbrWithMinHeurisitic():
     currentStateNbr = queue[0]
@@ -99,9 +149,9 @@ def getStateNbrWithMinHeurisitic():
     return currentStateNbr, currentInx
 
 def calcHeuristic(stateNbr):
-    heuristic = distToGoal[stateNbr] + distToState[stateNbr]
+    # heuristic = distToGoal[stateNbr] + distToState[stateNbr]
     # heuristic = distToGoal[stateNbr]
-    # heuristic = distToState[stateNbr]
+    heuristic = distToState[stateNbr]
     return heuristic
         
 def evaluateToGoal(state, goal):
